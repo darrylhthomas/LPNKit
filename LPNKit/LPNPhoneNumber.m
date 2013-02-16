@@ -22,6 +22,23 @@
 #import "LPNPhoneNumber.h"
 
 @implementation LPNPhoneNumber
+{
+    uint32_t _countryCode;
+    uint64_t _nationalNumber;
+    NSString *_extension;
+    BOOL _italianLeadingZero;
+    NSString *_rawInput;
+    LPNPhoneNumberCountryCodeSource _countryCodeSource;
+    NSString *_preferredDomesticCarrierCode;
+    
+    struct {
+        BOOL hasCountryCode : 1;
+        BOOL hasNationalNumber : 1;
+        BOOL hasItalianLeadingZero : 1;
+        BOOL hasCountryCodeSource : 1;
+    } _stateFlags;
+}
+
 
 @synthesize countryCode=_countryCode;
 @synthesize nationalNumber=_nationalNumber;
@@ -31,6 +48,23 @@
 @synthesize countryCodeSource=_countryCodeSource;
 @synthesize preferredDomesticCarrierCode=_preferredDomesticCarrierCode;
 
+- (id)copyWithZone:(NSZone *)zone
+{
+    LPNPhoneNumber *result = [[LPNPhoneNumber allocWithZone:zone] init];
+    if (result) {
+        result->_countryCode = self->_countryCode;
+        result->_nationalNumber = self->_nationalNumber;
+        result->_extension = [self->_extension copyWithZone:zone];
+        result->_italianLeadingZero = self->_italianLeadingZero;
+        result->_rawInput = [self->_rawInput copyWithZone:zone];
+        result->_countryCodeSource = self->_countryCodeSource;
+        result->_preferredDomesticCarrierCode = [self->_preferredDomesticCarrierCode copyWithZone:zone];
+        
+        memcpy(&(result->_stateFlags), &(self->_stateFlags), sizeof(self->_stateFlags));
+    }
+    
+    return result;
+}
 
 - (id)init
 {

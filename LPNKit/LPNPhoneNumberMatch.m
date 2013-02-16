@@ -48,6 +48,8 @@
 {
     [_rawString release];
     [_phoneNumber release];
+    
+    [super dealloc];
 }
 
 

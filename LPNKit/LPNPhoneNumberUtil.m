@@ -114,6 +114,15 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
     return nil;
 }
 
+- (NSString *)nationalNumberFormatForPhoneNumber:(LPNPhoneNumber *)phoneNumber withCarrierCode:(NSString *)carrierCode
+{
+    return nil;
+}
+
+- (NSString *)nationalNumberFormatForPhoneNumber:(LPNPhoneNumber *)phoneNumber withPreferredCarrierCode:(NSString *)preferredCarrierCode
+{
+    return nil;
+}
 
 - (NSString *)outOfCountryCallingNumberStringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)regionCode
 {
@@ -122,6 +131,42 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 
 
 - (NSString *)outOfCountryCallingNumberStringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)regionCode keepAlphaCharacters:(BOOL)keepAlpha
+{
+    return nil;
+}
+
+- (NSString *)stringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber format:(LPNPhoneNumberFormat)format pattern:(LPNNumberFormat *)pattern
+{
+    return [self stringWithPhoneNumber:phoneNumber format:format patterns:@[pattern]];
+}
+
+- (NSString *)mobileDialingNumberFormatForPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)regionCode includeFormattingSymbols:(BOOL)includeFormattingSymbols
+{
+    return nil;
+}
+
+- (NSString *)stringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber format:(LPNPhoneNumberFormat)format patterns:(NSArray *)patterns
+{
+    return nil;
+}
+
+- (LPNPhoneNumber *)phoneNumberByParsingString:(NSString *)numberToParse defaultRegion:(NSString *)defaultRegion keepingRawInput:(BOOL)keepRawInput error:(NSError **)error
+{
+    LPNPhoneNumber *result = [[LPNPhoneNumber alloc] init];
+    
+    if ([self parseString:numberToParse defaultRegion:defaultRegion keeepingRawInput:keepRawInput intoPhoneNumber:result error:error]) {
+        return result;
+    }
+    
+    return nil;
+}
+
+- (BOOL)parseString:(NSString *)numberToParse defaultRegion:(NSString *)defaultRegion keeepingRawInput:(BOOL)keepRawInput intoPhoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError **)error
+{
+    return NO;
+}
+
+- (NSString *)stringInOriginalFormatWithPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)region
 {
     return nil;
 }

@@ -23,6 +23,7 @@
 #import "LPNPhoneNumber.h"
 
 @class LPNPhoneMetadata;
+@class LPNNumberFormat;
 
 @interface LPNPhoneNumberUtil : NSObject
 
@@ -36,14 +37,33 @@
 - (NSUInteger)lengthOfGeographicalAreaCodeForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
 - (NSUInteger)lengthOfNationalDestinationCodeForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
 - (NSString *)nationalSignificantNumberForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
+
 - (LPNPhoneNumber *)examplePhoneNumberForRegion:(NSString *)regionCode;
 - (LPNPhoneNumber *)examplePhoneNumberOfType:(LPNPhoneNumberType)numberType forRegion:(NSString *)regionCode;
+
 - (NSString *)stringByConvertingAlphaCharactersInNumberString:(NSString *)numberString;
+
 - (NSString *)normalizedString:(NSString *)numberString;
 - (NSString *)normalizedStringWithDigitsOnly:(NSString *)numberString;
 - (NSString *)normalizedString:(NSString *)numberString keepNonDigits:(BOOL)keepNonDigits;
+
 - (NSString *)stringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber format:(LPNPhoneNumberFormat)format;
+
 - (NSString *)outOfCountryCallingNumberStringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)regionCode;
 - (NSString *)outOfCountryCallingNumberStringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)regionCode keepAlphaCharacters:(BOOL)keepAlpha;
+
+- (NSString *)nationalNumberFormatForPhoneNumber:(LPNPhoneNumber *)phoneNumber withCarrierCode:(NSString *)carrierCode;
+- (NSString *)nationalNumberFormatForPhoneNumber:(LPNPhoneNumber *)phoneNumber withPreferredCarrierCode:(NSString *)preferredCarrierCode;
+
+- (NSString *)mobileDialingNumberFormatForPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)regionCode includeFormattingSymbols:(BOOL)includeFormattingSymbols;
+
+- (NSString *)stringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber format:(LPNPhoneNumberFormat)format pattern:(LPNNumberFormat *)pattern;
+- (NSString *)stringWithPhoneNumber:(LPNPhoneNumber *)phoneNumber format:(LPNPhoneNumberFormat)format patterns:(NSArray *)patterns;
+
+- (LPNPhoneNumber *)phoneNumberByParsingString:(NSString *)numberToParse defaultRegion:(NSString *)defaultRegion keepingRawInput:(BOOL)keepRawInput error:(NSError *__autoreleasing*)error;
+- (BOOL)parseString:(NSString *)numberToParse defaultRegion:(NSString *)defaultRegion keeepingRawInput:(BOOL)keepRawInput intoPhoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError *__autoreleasing*)error;
+
+- (NSString *)stringInOriginalFormatWithPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)region;
+
 
 @end

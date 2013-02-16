@@ -52,25 +52,7 @@ typedef enum {
 } LPNPhoneNumberFormat;
 
 
-@interface LPNPhoneNumber : NSObject
-{
-    @private
-    uint32_t _countryCode;
-    uint64_t _nationalNumber;
-    NSString *_extension;
-    BOOL _italianLeadingZero;
-    NSString *_rawInput;
-    LPNPhoneNumberCountryCodeSource _countryCodeSource;
-    NSString *_preferredDomesticCarrierCode;
-    
-    struct {
-        BOOL hasCountryCode : 1;
-        BOOL hasNationalNumber : 1;
-        BOOL hasItalianLeadingZero : 1;
-        BOOL hasCountryCodeSource : 1;
-    } _stateFlags;
-}
-
+@interface LPNPhoneNumber : NSObject<NSCopying>
 
 @property (nonatomic, assign) uint32_t countryCode;
 @property (nonatomic, assign, readonly) BOOL hasCountryCode;

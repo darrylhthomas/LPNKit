@@ -618,8 +618,7 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     
     STAssertEqualObjects(@"011 54 9 11 8765 4321", [phoneUtil outOfCountryCallingNumberStringWithPhoneNumber:arMobile region:@"US"], @"Should properly format out of country calling number strings.");
     
-    LPNPhoneNumber *arNumberWithExtension = [[LPNPhoneNumber alloc] init];
-    [arNumberWithExtension mergeFromPhoneNumber:arNumber];
+    LPNPhoneNumber *arNumberWithExtension = [arNumber copy];
     arNumberWithExtension.extension = @"1234";
     
     STAssertEqualObjects(@"011 54 9 11 8765 4321 ext. 1234", [phoneUtil outOfCountryCallingNumberStringWithPhoneNumber:arNumberWithExtension region:@"US"], @"Should properly format out of country calling number strings.");
@@ -691,6 +690,159 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     alphaNumericNumber.nationalNumber = 80749;
     alphaNumericNumber.rawInput = @"180-SIX";
     STAssertEqualObjects(@"00 1 180-SIX", [phoneUtil outOfCountryCallingNumberStringWithPhoneNumber:alphaNumericNumber region:@"DE" keepAlphaCharacters:YES], @"");
+    
+}
+
+
+- (void)testFormatWithCarrierCode
+{
+    // Only supported for AR in test data and only for mobile numbers starting with certain values.
+    LPNPhoneNumber *arMobile = [[LPNPhoneNumber alloc] init];
+    arMobile.countryCode = 54;
+    arMobile.nationalNumber = 92234654321;
+    STAssertEqualObjects(@"02234 65-4321", [phoneUtil stringWithPhoneNumber:arMobile format:LPNPhoneNumberNationalFormat], @"Should format properly with national format.");
+
+    STAssertEqualObjects(@"02234 14 65-4321", [phoneUtil nationalNumberFormatForPhoneNumber:arMobile withCarrierCode:@"14"], @"Should format properly with carrier code.");
+    STAssertEqualObjects(@"02234 65-4321", [phoneUtil nationalNumberFormatForPhoneNumber:arMobile withCarrierCode:nil], @"Should format properly with nil carrier code.");
+    STAssertEqualObjects(@"02234 65-4321", [phoneUtil nationalNumberFormatForPhoneNumber:arMobile withCarrierCode:@""], @"Should format properly with empty carrier code.");
+    
+    STAssertEqualObjects(@"+5492234654321", [phoneUtil stringWithPhoneNumber:arMobile format:LPNPhoneNumberE164Format], @"Should not include carrier code when the international rule is used.");
+    
+    STAssertEqualObjects(@"650 253 0000", [phoneUtil nationalNumberFormatForPhoneNumber:usNumber withCarrierCode:@"15"], @"Should not include carrier code when unsupported.");
+}
+
+- (void)testFormatWithPreferredCarrierCode
+{
+    // Only supported for AR in test data.
+    LPNPhoneNumber *arNumber = [[LPNPhoneNumber alloc] init];
+    arNumber.countryCode = 54;
+    arNumber.nationalNumber = 91234125678;
+    
+    STAssertEqualObjects(@"01234 15 12-5678", [phoneUtil nationalNumberFormatForPhoneNumber:arNumber withPreferredCarrierCode:@"15"], @"Should format properly with no preferred carrier code stored in the number itself.");
+    STAssertEqualObjects(@"01234 12-5678", [phoneUtil nationalNumberFormatForPhoneNumber:arNumber withPreferredCarrierCode:nil], @"Should format properly with no preferred carrier code stored in the number itself.");
+    STAssertEqualObjects(@"01234 12-5678", [phoneUtil nationalNumberFormatForPhoneNumber:arNumber withPreferredCarrierCode:@""], @"Should format properly with no preferred carrier code stored in the number itself.");
+    
+    arNumber.preferredDomesticCarrierCode = @"19";
+    
+    STAssertEqualObjects(@"01234 12-5678", [phoneUtil stringWithPhoneNumber:arNumber format:LPNPhoneNumberNationalFormat], @"Should format properly with preferred carrier code present.");
+    STAssertEqualObjects(@"01234 19 12-5678", [phoneUtil nationalNumberFormatForPhoneNumber:arNumber withPreferredCarrierCode:@"15"], @"Should format properly with preferred carrier code present.");
+    STAssertEqualObjects(@"01234 19 12-5678", [phoneUtil nationalNumberFormatForPhoneNumber:arNumber withPreferredCarrierCode:nil], @"Should format properly with preferred carrier code present.");
+    STAssertEqualObjects(@"01234 19 12-5678", [phoneUtil nationalNumberFormatForPhoneNumber:arNumber withPreferredCarrierCode:@""], @"Should format properly with preferred carrier code present.");
+    
+    arNumber.preferredDomesticCarrierCode = @"";
+    
+    STAssertEqualObjects(@"01234 12-5678", [phoneUtil nationalNumberFormatForPhoneNumber:arNumber withPreferredCarrierCode:@"15"], @"Should format properly with preferred carrier code set to an empty string.");
+    
+    LPNPhoneNumber *usNumberWithPreferredCC = [[LPNPhoneNumber alloc] init];
+    usNumberWithPreferredCC.nationalNumber = 4241231234;
+    usNumberWithPreferredCC.preferredDomesticCarrierCode = @"99";
+    STAssertEqualObjects(@"424 123 1234", [phoneUtil stringWithPhoneNumber:usNumberWithPreferredCC format:LPNPhoneNumberNationalFormat], @"Should not include preferred carrier code when unsupported.");
+    STAssertEqualObjects(@"424 123 1234", [phoneUtil nationalNumberFormatForPhoneNumber:usNumberWithPreferredCC withPreferredCarrierCode:@"15"], @"Should not include preferred carrier code when unsupported.");
+}
+
+- (void)testFormatNumberForMobileDialing
+{
+    // US toll free numbers are marked as no international dialing in the test data for testing purposes.
+    
+    STAssertEqualObjects(@"800 253 0000", [phoneUtil mobileDialingNumberFormatForPhoneNumber:usTollfree region:@"US" includeFormattingSymbols:YES], @"Should format properly for mobile dialing.");
+    STAssertEqualObjects(@"", [phoneUtil mobileDialingNumberFormatForPhoneNumber:usTollfree region:@"CN" includeFormattingSymbols:YES], @"Should return an empty string for international mobile dialing when disallowed.");
+    STAssertEqualObjects(@"+1 650 253 0000", [phoneUtil mobileDialingNumberFormatForPhoneNumber:usNumber region:@"US" includeFormattingSymbols:YES], @"Should format properly for mobile dialing.");
+    
+    LPNPhoneNumber *usNumberWithExtension = [usNumber copy];
+    usNumberWithExtension.extension = @"1234";
+
+    STAssertEqualObjects(@"+1 650 253 0000", [phoneUtil mobileDialingNumberFormatForPhoneNumber:usNumberWithExtension region:@"US" includeFormattingSymbols:YES], @"Should format properly for mobile dialing.");
+
+    STAssertEqualObjects(@"8002530000", [phoneUtil mobileDialingNumberFormatForPhoneNumber:usTollfree region:@"US" includeFormattingSymbols:NO], @"Should format properly for mobile dialing.");
+    STAssertEqualObjects(@"", [phoneUtil mobileDialingNumberFormatForPhoneNumber:usTollfree region:@"CN" includeFormattingSymbols:NO], @"Should return an empty string for international mobile dialing when disallowed.");
+    STAssertEqualObjects(@"+16502530000", [phoneUtil mobileDialingNumberFormatForPhoneNumber:usNumber region:@"US" includeFormattingSymbols:NO], @"Should format properly for mobile dialing.");
+    STAssertEqualObjects(@"+16502530000", [phoneUtil mobileDialingNumberFormatForPhoneNumber:usNumberWithExtension region:@"US" includeFormattingSymbols:NO], @"Should format properly for mobile dialing.");
+}
+
+- (void)testFormatByPattern
+{
+    LPNNumberFormat * numberFormat = [[LPNNumberFormat alloc] init];
+    numberFormat.pattern = @"(\\d{3})(\\d{3})(\\d{4})";
+    numberFormat.format = @"($1) $2-$3";
+    
+    STAssertEqualObjects(@"(650) 253-0000", [phoneUtil stringWithPhoneNumber:usNumber format:LPNPhoneNumberNationalFormat pattern:numberFormat], @"Should format properly using a custom number format.");
+    STAssertEqualObjects(@"+1 (650) 253-0000", [phoneUtil stringWithPhoneNumber:usNumber format:LPNPhoneNumberInternationalFormat pattern:numberFormat], @"Should format properly using a custom number format.");
+    
+    // $NP is set to '1' for the US. Here we check that for other NANPA countries the US rules are followed.
+    numberFormat.nationalPrefixFormattingRule = @"$NP ($FG)";
+    numberFormat.format = @"$1 $2-$3";
+    
+    STAssertEqualObjects(@"1 (242) 365-1234", [phoneUtil stringWithPhoneNumber:bsNumber format:LPNPhoneNumberNationalFormat pattern:numberFormat], @"Should properly format using a custom number format.");
+    STAssertEqualObjects(@"+1 242 365-1234", [phoneUtil stringWithPhoneNumber:bsNumber format:LPNPhoneNumberInternationalFormat pattern:numberFormat], @"Should properly format using a custom number format.");
+    
+    numberFormat.pattern = @"(\\d{2})(\\d{5})(\\d{3})";
+    numberFormat.format = @"$1-$2 $3";
+    
+    STAssertEqualObjects(@"02-36618 300", [phoneUtil stringWithPhoneNumber:itNumber format:LPNPhoneNumberNationalFormat pattern:numberFormat], @"Should properly format using a custom number format.");
+    STAssertEqualObjects(@"+39 02-36618 300", [phoneUtil stringWithPhoneNumber:itNumber format:LPNPhoneNumberInternationalFormat pattern:numberFormat], @"Should properly format using a custom number format.");
+    
+    numberFormat.nationalPrefixFormattingRule = @"$NP$FG";
+    numberFormat.pattern = @"(\\d{2})(\\d{4})(\\d{4})";
+    numberFormat.format = @"$1 $2 $3";
+    
+    STAssertEqualObjects(@"020 7031 3000", [phoneUtil stringWithPhoneNumber:gbNumber format:LPNPhoneNumberNationalFormat pattern:numberFormat], @"Should properly format using a custom number format.");
+    
+    numberFormat.nationalPrefixFormattingRule = @"($NP$FG)";
+    
+    STAssertEqualObjects(@"(020) 7031 3000", [phoneUtil stringWithPhoneNumber:gbNumber format:LPNPhoneNumberNationalFormat pattern:numberFormat], @"Should properly format using a custom number format.");
+    
+    numberFormat.nationalPrefixFormattingRule = @"";
+    
+    STAssertEqualObjects(@"20 7031 3000", [phoneUtil stringWithPhoneNumber:gbNumber format:LPNPhoneNumberNationalFormat pattern:numberFormat], @"Should properly format using a custom number format.");
+    STAssertEqualObjects(@"+44 20 7031 3000", [phoneUtil stringWithPhoneNumber:gbNumber format:LPNPhoneNumberInternationalFormat pattern:numberFormat], @"Should properly format using a custom number format.");
+}
+
+- (void)testFormatE164Number
+{
+    STAssertEqualObjects(@"+16502530000", [phoneUtil stringWithPhoneNumber:usNumber format:LPNPhoneNumberE164Format], @"Should properly format using E164 format.");
+    STAssertEqualObjects(@"+4930123456", [phoneUtil stringWithPhoneNumber:deNumber format:LPNPhoneNumberE164Format], @"Should properly format using E164 format.");
+}
+
+- (void)testFormatNumberWithExtension
+{
+    LPNPhoneNumber *nzNumberWithExtension = [nzNumber copy];
+    nzNumberWithExtension.extension = @"1234";
+    
+    STAssertEqualObjects(@"03-331 6005 ext. 1234", [phoneUtil stringWithPhoneNumber:nzNumberWithExtension format:LPNPhoneNumberNationalFormat], @"Should properly format using default extension prefix.");
+    
+    STAssertEqualObjects(@"+64-3-331-6005;ext=1234", [phoneUtil stringWithPhoneNumber:nzNumberWithExtension format:LPNPhoneNumberRFC3966Format], @"Should properly format using RFC 3966 syntax");
+    
+    LPNPhoneNumber *usNumberWithExtension = [usNumber copy];
+    usNumberWithExtension.extension = @"4567";
+    
+    STAssertEqualObjects(@"650 253 0000 extn. 4567", [phoneUtil stringWithPhoneNumber:usNumberWithExtension format:LPNPhoneNumberNationalFormat], @"Should properly format using extension prefix overridden in the territory information for the US.");
+}
+
+- (void)testFormatUsingOriginalNumberFormat
+{
+    LPNPhoneNumber *number1 = [phoneUtil phoneNumberByParsingString:@"+442087654321" defaultRegion:@"GB" keepingRawInput:YES error:NULL];
+    STAssertEqualObjects(@"+44 20 8765 4321", [phoneUtil stringInOriginalFormatWithPhoneNumber:number1 region:@"GB"], @"Should properly format using original number format.");
+
+    LPNPhoneNumber *number2 = [phoneUtil phoneNumberByParsingString:@"02087654321" defaultRegion:@"GB" keepingRawInput:YES error:NULL];
+    STAssertEqualObjects(@"(020) 8765 4321", [phoneUtil stringInOriginalFormatWithPhoneNumber:number2 region:@"GB"], @"Should properly format using original number format.");
+    
+    LPNPhoneNumber *number3 = [phoneUtil phoneNumberByParsingString:@"011442087654321" defaultRegion:@"GB" keepingRawInput:YES error:NULL];
+    STAssertEqualObjects(@"011 44 20 8765 4321", [phoneUtil stringInOriginalFormatWithPhoneNumber:number3 region:@"GB"], @"Should properly format using original number format.");
+    
+    LPNPhoneNumber *number4 = [phoneUtil phoneNumberByParsingString:@"442087654321" defaultRegion:@"GB" keepingRawInput:YES error:NULL];
+    STAssertEqualObjects(@"44 20 8765 4321", [phoneUtil stringInOriginalFormatWithPhoneNumber:number4 region:@"GB"], @"Should properly format using original number format.");
+    
+    LPNPhoneNumber *number5 = [phoneUtil phoneNumberByParsingString:@"+442087654321" defaultRegion:@"GB" keepingRawInput:NO error:NULL];
+    STAssertEqualObjects(@"(020) 8765 4321", [phoneUtil stringInOriginalFormatWithPhoneNumber:number5 region:@"GB"], @"Should properly format using original number format.");
+    
+    
+    // Invalid numbers should be formatted using their raw input when available.
+    // Note area codes starting with 7 are intentionally excluded in the test data.
+    LPNPhoneNumber *number6 = [phoneUtil phoneNumberByParsingString:@"7345678901" defaultRegion:@"US" keepingRawInput:YES error:NULL];
+    STAssertEqualObjects(@"7345678901", [phoneUtil stringInOriginalFormatWithPhoneNumber:number6 region:@"US"], @"Should properly format using original number format.");
+    
+    LPNPhoneNumber *number7 = [phoneUtil phoneNumberByParsingString:@"7345678901" defaultRegion:@"US" keepingRawInput:NO error:NULL];
+    STAssertEqualObjects(@"734 567 8901", [phoneUtil stringInOriginalFormatWithPhoneNumber:number7 region:@"US"], @"Should properly format when raw input is unavailable.");
     
 }
 
