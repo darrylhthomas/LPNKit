@@ -65,11 +65,11 @@
 {
     LPNPhoneNumber *phoneNumberA = [[LPNPhoneNumber alloc] init];
     phoneNumberA.rawInput = @"+1 650 253 00 00";
-    phoneNumberA.countryCodeSource = LPNPhoneNumberCountryCodeFromNumberWithPlusSignSource;
+    phoneNumberA.countryCodeSource = LPNCountryCodeFromNumberWithPlusSignSource;
     
     LPNPhoneNumber *phoneNumberB = [[LPNPhoneNumber alloc] init];
     phoneNumberB.rawInput = @"+1 650 253 00 00";
-    phoneNumberB.countryCodeSource = LPNPhoneNumberCountryCodeFromNumberWithPlusSignSource;
+    phoneNumberB.countryCodeSource = LPNCountryCodeFromNumberWithPlusSignSource;
     
     STAssertEqualObjects(phoneNumberA, phoneNumberB, @"Identical phone numbers should be equal.");
     STAssertEquals([phoneNumberA hash], [phoneNumberB hash], @"Identical phone numbers should have the same hash.");
@@ -104,13 +104,13 @@
     phoneNumberA.countryCode = 1;
     phoneNumberA.nationalNumber = 6502530000;
     phoneNumberA.rawInput = @"+1 650 253 00 00";
-    phoneNumberA.countryCodeSource = LPNPhoneNumberCountryCodeFromNumberWithPlusSignSource;
+    phoneNumberA.countryCodeSource = LPNCountryCodeFromNumberWithPlusSignSource;
     
     LPNPhoneNumber *phoneNumberB = [[LPNPhoneNumber alloc] init];
     phoneNumberB.countryCode = 1;
     phoneNumberB.nationalNumber = 6502530000;
     phoneNumberB.rawInput = @"+1-650-253-00-00";
-    phoneNumberB.countryCodeSource = LPNPhoneNumberCountryCodeFromNumberWithPlusSignSource;
+    phoneNumberB.countryCodeSource = LPNCountryCodeFromNumberWithPlusSignSource;
     
     STAssertFalse([phoneNumberA isEqual:phoneNumberB], @"Phone numbers should not be equal when raw input differs.");
     STAssertFalse([phoneNumberA hash] == [phoneNumberB hash], @"Hashes should not be equal when raw input differs.");

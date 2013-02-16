@@ -75,7 +75,7 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 
 - (LPNPhoneNumber *)examplePhoneNumberForRegion:(NSString *)regionCode
 {
-    return [self examplePhoneNumberOfType:LPNPhoneNumberFixedLineType forRegion:regionCode];
+    return [self examplePhoneNumberOfType:LPNFixedLinePhoneNumberType forRegion:regionCode];
 }
 
 

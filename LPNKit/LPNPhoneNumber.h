@@ -21,35 +21,35 @@
 
 #import <Foundation/Foundation.h>
 
-typedef enum {
-    LPNPhoneNumberCountryCodeFromNumberWithPlusSignSource,
-    LPNPhoneNumberCountryCodeFromNumberWithIDDSource,
-    LPNPhoneNumberCountryCodeFromNumberWithoutPlusSignSource,
-    LPNPhoneNumberCountryCodeFromDefaultCountrySource,
-} LPNPhoneNumberCountryCodeSource;
+typedef NS_ENUM(NSUInteger, LPNCountryCodeSource) {
+    LPNCountryCodeFromNumberWithPlusSignSource,
+    LPNCountryCodeFromNumberWithIDDSource,
+    LPNCountryCodeFromNumberWithoutPlusSignSource,
+    LPNCountryCodeFromDefaultCountrySource,
+};
 
 
-typedef enum {
-    LPNPhoneNumberFixedLineType,
-    LPNPhoneNumberMobileType,
-    LPNPhoneNumberFixedLineOrMobileType,
-    LPNPhoneNumberTollfreeType,
-    LPNPhoneNumberPremiumRateType,
-    LPNPhoneNumberSharedCostType,
-    LPNPhoneNumberVOIPType,
-    LPNPhoneNumberPersonalNumberType,
-    LPNPhoneNumberPagerType,
-    LPNPhoneNumberUANType,
-    LPNPhoneNumberUnknownType,
-} LPNPhoneNumberType;
+typedef NS_ENUM(NSUInteger, LPNPhoneNumberType) {
+    LPNFixedLinePhoneNumberType,
+    LPNMobilePhoneNumberType,
+    LPNFixedLineOrMobilePhoneNumberType,
+    LPNTollFreePhoneNumberType,
+    LPNPremiumRatePhoneNumberType,
+    LPNSharedCostPhoneNumberType,
+    LPNVOIPPhoneNumberType,
+    LPNPersonalPhoneNumberType,
+    LPNPagerPhoneNumberType,
+    LPNUANPhoneNumberType,
+    LPNUnknownPhoneNumberType,
+};
 
 
-typedef enum {
-    LPNPhoneNumberE164Format,
-    LPNPhoneNumberInternationalFormat,
-    LPNPhoneNumberNationalFormat,
-    LPNPhoneNumberRFC3966Format,
-} LPNPhoneNumberFormat;
+typedef NS_ENUM(NSUInteger, LPNPhoneNumberFormat) {
+    LPNE164PhoneNumberFormat,
+    LPNInternationalPhoneNumberFormat,
+    LPNNationalPhoneNumberFormat,
+    LPNRFC3966PhoneNumberFormat,
+};
 
 
 @interface LPNPhoneNumber : NSObject<NSCopying>
@@ -62,7 +62,7 @@ typedef enum {
 @property (nonatomic, assign, getter=isItalianLeadingZero) BOOL italianLeadingZero;
 @property (nonatomic, assign, readonly) BOOL hasItalianLeadingZero;
 @property (nonatomic, copy) NSString *rawInput;
-@property (nonatomic, assign) LPNPhoneNumberCountryCodeSource countryCodeSource;
+@property (nonatomic, assign) LPNCountryCodeSource countryCodeSource;
 @property (nonatomic, assign, readonly) BOOL hasCountryCodeSource;
 @property (nonatomic, copy) NSString *preferredDomesticCarrierCode;
 

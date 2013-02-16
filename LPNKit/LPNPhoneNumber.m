@@ -28,7 +28,7 @@
     NSString *_extension;
     BOOL _italianLeadingZero;
     NSString *_rawInput;
-    LPNPhoneNumberCountryCodeSource _countryCodeSource;
+    LPNCountryCodeSource _countryCodeSource;
     NSString *_preferredDomesticCarrierCode;
     
     struct {
@@ -70,7 +70,7 @@
 {
     self = [super init];
     if (self) {
-        self.countryCodeSource = LPNPhoneNumberCountryCodeFromNumberWithPlusSignSource;
+        self.countryCodeSource = LPNCountryCodeFromNumberWithPlusSignSource;
     }
     
     return self;
@@ -171,7 +171,7 @@
 }
 
 
-- (void)setCountryCodeSource:(LPNPhoneNumberCountryCodeSource)countryCodeSource
+- (void)setCountryCodeSource:(LPNCountryCodeSource)countryCodeSource
 {
     [self willChangeValueForKey:@"countryCodeSource"];
     [self willChangeValueForKey:@"hasCountryCodeSource"];
@@ -186,7 +186,7 @@
 {
     [self willChangeValueForKey:@"countryCodeSource"];
     [self willChangeValueForKey:@"hasCountryCodeSource"];
-    _countryCodeSource = LPNPhoneNumberCountryCodeFromNumberWithPlusSignSource;
+    _countryCodeSource = LPNCountryCodeFromNumberWithPlusSignSource;
     _stateFlags.hasCountryCodeSource = NO;
     [self didChangeValueForKey:@"countryCodeSource"];
     [self didChangeValueForKey:@"hasCountryCodeSource"];
