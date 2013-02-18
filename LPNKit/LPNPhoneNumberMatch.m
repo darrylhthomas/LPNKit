@@ -37,7 +37,7 @@
     if (self) {        
         _start = start;
         _rawString = [rawString copy];
-        _phoneNumber = phoneNumber;
+        _phoneNumber = [phoneNumber retain];
     }
     
     return self;
