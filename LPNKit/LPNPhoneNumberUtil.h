@@ -65,5 +65,23 @@
 
 - (NSString *)stringInOriginalFormatWithPhoneNumber:(LPNPhoneNumber *)phoneNumber region:(NSString *)region;
 
+- (LPNPhoneNumberType)typeForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
+
+- (BOOL)isValidNumber:(LPNPhoneNumber *)phoneNumber;
+- (BOOL)isValidNumber:(LPNPhoneNumber *)phoneNumber forRegion:(NSString *)regionCode;
+
+- (NSString *)regionCodeForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
+- (NSString *)regionCodeForCountryCode:(uint32_t)countryCode;
+- (uint32_t)countryCodeForRegion:(NSString *)regionCode;
+
+- (NSString *)nddPrefixForRegion:(NSString *)regionCode stripNonDigits:(BOOL)stripNonDigits;
+
+- (BOOL)isNANPACountry:(NSString *)regionCode;
+
+- (BOOL)isPossiblePhoneNumberString:(NSString *)phoneNumberString dialedFromRegion:(NSString *)regionCode;
+- (BOOL)isPossiblePhoneNumber:(LPNPhoneNumber *)phoneNumber;
+- (LPNPhoneNumberValidationResult)validatePhoneNumber:(LPNPhoneNumber *)phoneNumber;
+
+- (BOOL)truncateTooLongPhoneNumber:(LPNPhoneNumber *)phoneNumber;
 
 @end

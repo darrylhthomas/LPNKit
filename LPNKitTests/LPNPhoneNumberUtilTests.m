@@ -846,4 +846,412 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     
 }
 
+- (void)testIsPremiumRate
+{
+    STAssertEquals(LPNPremiumRatePhoneNumberType, [phoneUtil typeForPhoneNumber:usPremium], @"Should return the correct type for premium rate numbers.");
+    
+    LPNPhoneNumber *premiumRateNumber = [[LPNPhoneNumber alloc] init];
+    premiumRateNumber.countryCode = 39;
+    premiumRateNumber.nationalNumber = 892123;
+    
+    STAssertEquals(LPNPremiumRatePhoneNumberType, [phoneUtil typeForPhoneNumber:premiumRateNumber], @"Should return the correct type for premium rate numbers.");
+    
+    [premiumRateNumber clear];
+    premiumRateNumber.countryCode = 44;
+    premiumRateNumber.nationalNumber = 9187654321;
+    
+    STAssertEquals(LPNPremiumRatePhoneNumberType, [phoneUtil typeForPhoneNumber:premiumRateNumber], @"Should return the correct type for premium rate numbers.");
+    
+    [premiumRateNumber clear];
+    premiumRateNumber.countryCode = 49;
+    premiumRateNumber.nationalNumber = 9001654321;
+    
+    STAssertEquals(LPNPremiumRatePhoneNumberType, [phoneUtil typeForPhoneNumber:premiumRateNumber], @"Should return the correct type for premium rate numbers.");
+    
+    [premiumRateNumber clear];
+    premiumRateNumber.countryCode = 49;
+    premiumRateNumber.nationalNumber = 90091234567;
+
+    STAssertEquals(LPNPremiumRatePhoneNumberType, [phoneUtil typeForPhoneNumber:premiumRateNumber], @"Should return the correct type for premium rate numbers.");
+}
+
+- (void)testIsTollFree
+{
+    LPNPhoneNumber *tollFreeNumber = [[LPNPhoneNumber alloc] init];
+    tollFreeNumber.countryCode = 1;
+    tollFreeNumber.nationalNumber = 8881234567;
+    
+    STAssertEquals(LPNTollFreePhoneNumberType, [phoneUtil typeForPhoneNumber:tollFreeNumber], @"Should return the correct type for toll-free numbers.");
+    
+    [tollFreeNumber clear];
+    tollFreeNumber.countryCode = 39;
+    tollFreeNumber.nationalNumber = 803123;
+    
+    STAssertEquals(LPNTollFreePhoneNumberType, [phoneUtil typeForPhoneNumber:tollFreeNumber], @"Should return the correct type for toll-free numbers.");
+    
+    [tollFreeNumber clear];
+    tollFreeNumber.countryCode = 44;
+    tollFreeNumber.nationalNumber = 8012345678;
+    
+    STAssertEquals(LPNTollFreePhoneNumberType, [phoneUtil typeForPhoneNumber:tollFreeNumber], @"Should return the correct type for toll-free numbers.");
+    
+    [tollFreeNumber clear];
+    tollFreeNumber.countryCode = 49;
+    tollFreeNumber.nationalNumber = 8001234567;
+    
+    STAssertEquals(LPNTollFreePhoneNumberType, [phoneUtil typeForPhoneNumber:tollFreeNumber], @"Should return the correct type for toll-free numbers.");
+}
+
+- (void)testIsMobile
+{
+    STAssertEquals(LPNMobilePhoneNumberType, [phoneUtil typeForPhoneNumber:bsMobile], @"Should return the correct type for mobile numbers.");
+    STAssertEquals(LPNMobilePhoneNumberType, [phoneUtil typeForPhoneNumber:gbMobile], @"Should return the correct type for mobile numbers.");
+    STAssertEquals(LPNMobilePhoneNumberType, [phoneUtil typeForPhoneNumber:itMobile], @"Should return the correct type for mobile numbers.");
+    STAssertEquals(LPNMobilePhoneNumberType, [phoneUtil typeForPhoneNumber:arMobile], @"Should return the correct type for mobile numbers.");
+
+    LPNPhoneNumber *mobileNumber = [[LPNPhoneNumber alloc] init];
+    mobileNumber.countryCode = 49;
+    mobileNumber.nationalNumber = 15123456789;
+    
+    STAssertEquals(LPNMobilePhoneNumberType, [phoneUtil typeForPhoneNumber:mobileNumber], @"Should return the correct type for mobile numbers.");
+}
+
+- (void)testIsFixedLine
+{
+    STAssertEquals(LPNFixedLinePhoneNumberType, [phoneUtil typeForPhoneNumber:bsNumber], @"Should return the correct type for fixed line numbers.");
+    STAssertEquals(LPNFixedLinePhoneNumberType, [phoneUtil typeForPhoneNumber:itNumber], @"Should return the correct type for fixed line numbers.");
+    STAssertEquals(LPNFixedLinePhoneNumberType, [phoneUtil typeForPhoneNumber:gbNumber], @"Should return the correct type for fixed line numbers.");
+    STAssertEquals(LPNFixedLinePhoneNumberType, [phoneUtil typeForPhoneNumber:deNumber], @"Should return the correct type for fixed line numbers.");
+}
+
+- (void)testIsFixedLineOrMobile
+{
+    STAssertEquals(LPNFixedLineOrMobilePhoneNumberType, [phoneUtil typeForPhoneNumber:usNumber], @"Should return the correct type for fixed line or mobile numbers.");
+    
+    LPNPhoneNumber *fixedLineOrMobileNumber = [[LPNPhoneNumber alloc] init];
+    fixedLineOrMobileNumber.countryCode = 54;
+    fixedLineOrMobileNumber.nationalNumber = 1987654321;
+    
+    STAssertEquals(LPNFixedLineOrMobilePhoneNumberType, [phoneUtil typeForPhoneNumber:fixedLineOrMobileNumber], @"Should return the correct type for fixed line or mobile numbers.");
+}
+
+- (void)testIsSharedCost
+{
+    LPNPhoneNumber *gbSharedCostNumber = [[LPNPhoneNumber alloc] init];
+    gbSharedCostNumber.countryCode = 44;
+    gbSharedCostNumber.nationalNumber = 8431231234;
+    
+    STAssertEquals(LPNSharedCostPhoneNumberType, [phoneUtil typeForPhoneNumber:gbSharedCostNumber], @"Should return the correct type for shared cost numbers.");
+}
+
+- (void)testIsVOIP
+{
+    LPNPhoneNumber *gbVOIPNumber = [[LPNPhoneNumber alloc] init];
+    gbVOIPNumber.countryCode = 44;
+    gbVOIPNumber.nationalNumber = 5631231234;
+    
+    STAssertEquals(LPNVOIPPhoneNumberType, [phoneUtil typeForPhoneNumber:gbVOIPNumber], @"Should return the correct type for VOIP numbers.");
+}
+
+- (void)testIsPersonalNumber
+{
+    LPNPhoneNumber *gbPersonalNumber = [[LPNPhoneNumber alloc] init];
+    gbPersonalNumber.countryCode = 44;
+    gbPersonalNumber.nationalNumber = 7031231234;
+    
+    STAssertEquals(LPNPersonalPhoneNumberType, [phoneUtil typeForPhoneNumber:gbPersonalNumber], @"Should return the correct type for personal numbers.");
+}
+
+- (void)testIsUnknown
+{
+    STAssertEquals(LPNUnknownPhoneNumberType, [phoneUtil typeForPhoneNumber:usLocalNumber], @"Should return unknown type for invalid numbers.");
+}
+
+- (void)testIsValidNumber
+{
+    STAssertTrue([phoneUtil isValidNumber:usNumber], @"Should properly validate phone numbers.");
+    STAssertTrue([phoneUtil isValidNumber:itNumber], @"Should properly validate phone numbers.");
+    STAssertTrue([phoneUtil isValidNumber:gbMobile], @"Should properly validate phone numbers.");
+
+    LPNPhoneNumber *nzValidNumber = [[LPNPhoneNumber alloc] init];
+    nzValidNumber.countryCode = 64;
+    nzValidNumber.nationalNumber = 21387835;
+    STAssertTrue([phoneUtil isValidNumber:nzValidNumber], @"Should properly validate phone numbers.");
+}
+
+- (void)testIsValidForRegion
+{
+    // This number is valid for the Bahamas but is not a valid US number.
+    STAssertTrue([phoneUtil isValidNumber:bsNumber], @"Should properly validate phone numbers.");
+    STAssertTrue([phoneUtil isValidNumber:bsNumber forRegion:@"BS"], @"Should properly validate phone numbers for specific regions.");
+    STAssertFalse([phoneUtil isValidNumber:bsNumber forRegion:@"US"], @"Should properly validate phone numbers for specific regions.");
+
+    LPNPhoneNumber *bsInvalidNumber = [[LPNPhoneNumber alloc] init];
+    bsInvalidNumber.countryCode = 1;
+    bsInvalidNumber.nationalNumber = 2421232345;
+    
+    STAssertFalse([phoneUtil isValidNumber:bsInvalidNumber], @"Should properly validate phone numbers.");
+
+    // La Mayotte and Reunion us 'leading digits' to differentiate them.
+    LPNPhoneNumber *reNumber = [[LPNPhoneNumber alloc] init];
+    reNumber.countryCode = 262;
+    reNumber.nationalNumber = 262123456;
+
+    STAssertTrue([phoneUtil isValidNumber:reNumber], @"Should properly validate phone numbers.");
+    STAssertTrue([phoneUtil isValidNumber:reNumber forRegion:@"RE"], @"Should properly validate phone numbers for specific regions.");
+    STAssertFalse([phoneUtil isValidNumber:reNumber forRegion:@"YT"], @"Should properly validate phone numbers for specific regions.");
+    
+    reNumber.nationalNumber = 269601234;
+
+    STAssertTrue([phoneUtil isValidNumber:reNumber forRegion:@"YT"], @"Should properly validate phone numbers for specific regions.");
+    STAssertFalse([phoneUtil isValidNumber:reNumber forRegion:@"RE"], @"Should properly validate phone numbers for specific regions.");
+
+    reNumber.nationalNumber = 269123456;
+    
+    STAssertFalse([phoneUtil isValidNumber:reNumber forRegion:@"YT"], @"Should properly validate phone numbers for specific regions.");
+    STAssertFalse([phoneUtil isValidNumber:reNumber forRegion:@"RE"], @"Should properly validate phone numbers for specific regions.");
+    STAssertFalse([phoneUtil isValidNumber:reNumber], @"Should properly validate phone numbers.");
+    
+    // The number should still be recognized as from La Mayotte, since it is valid for the region.
+    STAssertEqualObjects(@"YT", [phoneUtil regionCodeForPhoneNumber:reNumber], @"Should return the correct region code for a valid number.");
+    
+    // This number is valid in both YT and RE
+    reNumber.nationalNumber = 800123456;
+    
+    STAssertTrue([phoneUtil isValidNumber:reNumber forRegion:@"YT"], @"Should properly validate phone numbers for specific regions.");
+    STAssertTrue([phoneUtil isValidNumber:reNumber forRegion:@"RE"], @"Should properly validate phone numbers for specific regions.");
+}
+
+- (void)testIsNotValidNumber
+{
+    STAssertFalse([phoneUtil isValidNumber:usLocalNumber], @"Should properly validate phone numbers.");
+    
+    LPNPhoneNumber *invalidNumber = [[LPNPhoneNumber alloc] init];
+    invalidNumber.countryCode = 39;
+    invalidNumber.nationalNumber = 23661830000;
+    invalidNumber.italianLeadingZero = YES;
+    
+    STAssertFalse([phoneUtil isValidNumber:invalidNumber], @"Should properly validate phone numbers.");
+    
+    [invalidNumber clear];
+    invalidNumber.countryCode = 44;
+    invalidNumber.nationalNumber = 791234567;
+
+    STAssertFalse([phoneUtil isValidNumber:invalidNumber], @"Should properly validate phone numbers.");
+    
+    [invalidNumber clear];
+    invalidNumber.countryCode = 49;
+    invalidNumber.nationalNumber = 1234;
+    
+    STAssertFalse([phoneUtil isValidNumber:invalidNumber], @"Should properly validate phone numbers.");
+    
+    [invalidNumber clear];
+    invalidNumber.countryCode = 64;
+    invalidNumber.nationalNumber = 3316005;
+    
+    STAssertFalse([phoneUtil isValidNumber:invalidNumber], @"Should properly validate phone numbers.");
+}
+
+- (void)testRegionCodeForCountryCode
+{
+    STAssertEqualObjects(@"US", [phoneUtil regionCodeForCountryCode:1], @"Should return the correct region code.");
+    STAssertEqualObjects(@"GB", [phoneUtil regionCodeForCountryCode:44], @"Should return the correct region code.");
+    STAssertEqualObjects(@"DE", [phoneUtil regionCodeForCountryCode:49], @"Should return the correct region code.");
+}
+
+- (void)testRegionCodeForPhoneNumber
+{
+    STAssertEqualObjects(@"BS", [phoneUtil regionCodeForPhoneNumber:bsNumber], @"Should return the correct region code.");
+    STAssertEqualObjects(@"US", [phoneUtil regionCodeForPhoneNumber:usNumber], @"Should return the correct region code.");
+    STAssertEqualObjects(@"GB", [phoneUtil regionCodeForPhoneNumber:gbNumber], @"Should return the correct region code.");
+}
+
+- (void)testCountryCodeForRegion
+{
+    STAssertEquals(1, [phoneUtil countryCodeForRegion:@"US"], @"Should return the correct country code.");
+    STAssertEquals(64, [phoneUtil countryCodeForRegion:@"NZ"], @"Should return the correct country code.");
+    STAssertEquals(0, [phoneUtil countryCodeForRegion:nil], @"Should return the correct country code.");
+    STAssertEquals(0, [phoneUtil countryCodeForRegion:@"ZZ"], @"Should return the correct country code.");
+    
+    // CS is deprecated
+    STAssertEquals(0, [phoneUtil countryCodeForRegion:@"CS"], @"Should return the correct country code.");
+}
+
+- (void)testNationalDiallingPrefixForRegion
+{
+    STAssertEqualObjects(@"1", [phoneUtil nddPrefixForRegion:@"US" stripNonDigits:NO], @"Should return the correct national dialling prefix.");
+    
+    // Test non-main country to see it gets the national dialling prefix for the main country with that calling code.
+    STAssertEqualObjects(@"1", [phoneUtil nddPrefixForRegion:@"BS" stripNonDigits:NO], @"Should return the correct national dialling prefix.");
+    STAssertEqualObjects(@"0", [phoneUtil nddPrefixForRegion:@"NZ" stripNonDigits:NO], @"Should return the correct national dialling prefix.");
+    
+    // Test case with non difit in the national prefix.
+    STAssertEqualObjects(@"0~0", [phoneUtil nddPrefixForRegion:@"AO" stripNonDigits:NO], @"Should return the correct national dialling prefix.");
+    STAssertEqualObjects(@"00", [phoneUtil nddPrefixForRegion:@"AO" stripNonDigits:YES], @"Should return the correct national dialling prefix.");
+    
+    // Test cases with invalid regions.
+    STAssertNil([phoneUtil nddPrefixForRegion:nil stripNonDigits:NO], @"Should return the correct national dialling prefix.");
+    STAssertNil([phoneUtil nddPrefixForRegion:@"ZZ" stripNonDigits:NO], @"Should return the correct national dialling prefix.");
+    
+    // CS is deprecated so the library doesn't support it.
+    STAssertNil([phoneUtil nddPrefixForRegion:@"CS" stripNonDigits:NO], @"Should return the correct national dialling prefix.");
+}
+
+- (void)testIsNANPACountry
+{
+    STAssertTrue([phoneUtil isNANPACountry:@"US"], @"Should properly determine whether a region is a NANPA country.");
+    STAssertTrue([phoneUtil isNANPACountry:@"BS"], @"Should properly determine whether a region is a NANPA country.");
+    STAssertFalse([phoneUtil isNANPACountry:@"DE"], @"Should properly determine whether a region is a NANPA country.");
+    STAssertFalse([phoneUtil isNANPACountry:@"ZZ"], @"Should properly determine whether a region is a NANPA country.");
+    STAssertFalse([phoneUtil isNANPACountry:nil], @"Should properly determine whether a region is a NANPA country.");
+}
+
+- (void)testIsPossibleNumber
+{
+    STAssertTrue([phoneUtil isPossiblePhoneNumber:usNumber], @"Should properly determine whether a phone number is possible.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumber:usLocalNumber], @"Should properly determine whether a phone number is possible.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumber:gbNumber], @"Should properly determine whether a phone number is possible.");
+
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"+1 650 253 0000" dialedFromRegion:@"US"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"+1 650 GOO OGLE" dialedFromRegion:@"US"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"(650) 253-0000" dialedFromRegion:@"US"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"253-0000" dialedFromRegion:@"US"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"+1 650 253 0000" dialedFromRegion:@"GB"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"+44 20 7031 3000" dialedFromRegion:@"GB"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"(020) 7031 3000" dialedFromRegion:@"GB"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"7031 3000" dialedFromRegion:@"GB"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+    STAssertTrue([phoneUtil isPossiblePhoneNumberString:@"3331 6005" dialedFromRegion:@"NZ"], @"Should properly determine whether a phone number string is possible when dialed from a given region.");
+}
+
+- (void)testValidatePhoneNumber
+{
+    // National numbers for country calling code +1 that are within 7 to 10 digits are possible.
+    STAssertEquals(LPNPhoneNumberIsPossibleValidationResult, [phoneUtil validatePhoneNumber:usNumber], @"Should properly validate phone numbers.");
+    STAssertEquals(LPNPhoneNumberIsPossibleValidationResult, [phoneUtil validatePhoneNumber:usLocalNumber], @"Should properly validate phone numbers.");
+    STAssertEquals(LPNPhoneNumberIsTooLongValidationResult, [phoneUtil validatePhoneNumber:usLongNumber], @"Should properly validate phone numbers.");
+    
+    LPNPhoneNumber *phoneNumber = [[LPNPhoneNumber alloc] init];
+    phoneNumber.countryCode = 0;
+    phoneNumber.nationalNumber = 2530000;
+    
+    STAssertEquals(LPNInvalidCountryCodeValidationResult, [phoneUtil validatePhoneNumber:phoneNumber], @"Should properly validate phone numbers.");
+
+    [phoneNumber clear];
+    phoneNumber.countryCode = 1;
+    phoneNumber.nationalNumber = 253000;
+    
+    STAssertEquals(LPNPhoneNumberIsTooShortValidationResult, [phoneUtil validatePhoneNumber:phoneNumber], @"Should properly validate phone numbers.");
+    
+    [phoneNumber clear];
+    phoneNumber.countryCode = 65;
+    phoneNumber.nationalNumber = 1234567890;
+    
+    STAssertEquals(LPNPhoneNumberIsPossibleValidationResult, [phoneUtil validatePhoneNumber:phoneNumber], @"Should properly validate phone numbers.");
+    
+    // Numbers for which we have no metadata
+    LPNPhoneNumber *adNumber = [[LPNPhoneNumber alloc] init];
+    adNumber.countryCode = 376;
+    adNumber.nationalNumber = 12345;
+    
+    STAssertEquals(LPNPhoneNumberIsPossibleValidationResult, [phoneUtil validatePhoneNumber:adNumber], @"Should properly validate phone numbers.");
+    
+    adNumber.nationalNumber = 13;
+
+    STAssertEquals(LPNPhoneNumberIsTooShortValidationResult, [phoneUtil validatePhoneNumber:adNumber], @"Should properly validate phone numbers.");
+
+    adNumber.nationalNumber = 12345678901234567;
+
+    STAssertEquals(LPNPhoneNumberIsTooLongValidationResult, [phoneUtil validatePhoneNumber:adNumber], @"Should properly validate phone numbers.");
+}
+
+- (void)testIsNotPossibleNumber
+{
+    STAssertFalse([phoneUtil isPossiblePhoneNumber:usLongNumber], @"Should properly validate phone numbers.");
+    
+    LPNPhoneNumber *phoneNumber = [[LPNPhoneNumber alloc] init];
+    phoneNumber.countryCode = 1;
+    phoneNumber.nationalNumber = 253000;
+    
+    STAssertFalse([phoneUtil isPossiblePhoneNumber:phoneNumber], @"Should properly validate phone numbers.");
+    
+    [phoneNumber clear];
+    phoneNumber.countryCode = 44;
+    phoneNumber.nationalNumber = 300;
+    
+    STAssertFalse([phoneUtil isPossiblePhoneNumber:phoneNumber], @"Should properly validate phone numbers.");
+    
+    STAssertFalse([phoneUtil isPossiblePhoneNumberString:@"+1 650 253 00000" dialedFromRegion:@"US"], @"Should properly validate phone numbers.");
+    STAssertFalse([phoneUtil isPossiblePhoneNumberString:@"(650) 253-00000" dialedFromRegion:@"US"], @"Should properly validate phone numbers.");
+    STAssertFalse([phoneUtil isPossiblePhoneNumberString:@"I want a Pizza" dialedFromRegion:@"US"], @"Should properly validate phone numbers.");
+    STAssertFalse([phoneUtil isPossiblePhoneNumberString:@"253-000" dialedFromRegion:@"US"], @"Should properly validate phone numbers.");
+    STAssertFalse([phoneUtil isPossiblePhoneNumberString:@"1 3000" dialedFromRegion:@"GB"], @"Should properly validate phone numbers.");
+    STAssertFalse([phoneUtil isPossiblePhoneNumberString:@"+44 300" dialedFromRegion:@"GB"], @"Should properly validate phone numbers.");
+}
+
+- (void)testTruncateTooLongNumber
+{
+    // US number 650-253-0000, but entered with one additional digit at the end.
+    LPNPhoneNumber *tooLongNumber = [usLongNumber copy];
+    LPNPhoneNumber *validNumber = [usNumber copy];
+
+    STAssertTrue([phoneUtil truncateTooLongPhoneNumber:tooLongNumber], @"Should properly truncate a phone number that is too long.");
+    STAssertEqualObjects(validNumber, tooLongNumber, @"Should properly truncate a phone number that is too long.");
+    
+    // GB number 080 1234 5678, but entered with 4 extra digits at the end.
+    [tooLongNumber clear];
+    tooLongNumber.countryCode = 44;
+    tooLongNumber.nationalNumber = 80123456780123;
+    
+    [validNumber clear];
+    validNumber.countryCode = 44;
+    validNumber.nationalNumber = 8012345678;
+
+    STAssertTrue([phoneUtil truncateTooLongPhoneNumber:tooLongNumber], @"Should properly truncate a phone number that is too long.");
+    STAssertEqualObjects(validNumber, tooLongNumber, @"Should properly truncate a phone number that is too long.");
+
+    // IT number 022 3456 7890, but entered with 3 extra digits at the end.
+    [tooLongNumber clear];
+    tooLongNumber.countryCode = 39;
+    tooLongNumber.nationalNumber = 2234567890123;
+    tooLongNumber.italianLeadingZero = YES;
+    
+    [validNumber clear];
+    validNumber.countryCode = 39;
+    validNumber.nationalNumber = 2234567890;
+    validNumber.italianLeadingZero = YES;
+    
+    STAssertTrue([phoneUtil truncateTooLongPhoneNumber:tooLongNumber], @"Should properly truncate a phone number that is too long.");
+    STAssertEqualObjects(validNumber, tooLongNumber, @"Should properly truncate a phone number that is too long.");
+    
+    // Tests what happens when a valid number is passed in.
+    LPNPhoneNumber *validNumberCopy = [validNumber copy];
+    
+    STAssertTrue([phoneUtil truncateTooLongPhoneNumber:validNumber], @"Should properly truncate a phone number that is too long.");
+    // The number should not be modified.
+    STAssertEqualObjects(validNumberCopy, validNumber, @"Should properly truncate a phone number that is too long.");
+    
+    // Tests what happens when a number with an invalid prefix is passed in.
+    LPNPhoneNumber *numberWithInvalidPrefix = [[LPNPhoneNumber alloc] init];
+    // Test data says US numbers cannot have prefix 240.
+    numberWithInvalidPrefix.countryCode = 1;
+    numberWithInvalidPrefix.nationalNumber = 2401234567;
+    
+    LPNPhoneNumber *invalidNumberCopy = [numberWithInvalidPrefix copy];
+    
+    STAssertFalse([phoneUtil truncateTooLongPhoneNumber:numberWithInvalidPrefix], @"Should properly truncate a phone number that is too long.");
+    // The number should not be modified.
+    STAssertEqualObjects(invalidNumberCopy, numberWithInvalidPrefix, @"Should properly truncate a phone number that is too long.");
+ 
+    // Tests what happens when a too short number is passed in.
+    LPNPhoneNumber *tooShortNumber = [[LPNPhoneNumber alloc] init];
+    tooShortNumber.countryCode = 1;
+    tooShortNumber.nationalNumber = 1234;
+    
+    LPNPhoneNumber *tooShortNumberCopy = [tooShortNumber copy];
+        
+    STAssertFalse([phoneUtil truncateTooLongPhoneNumber:tooShortNumber], @"Should properly truncate a phone number that is too long.");
+    // The number should not be modified.
+    STAssertEqualObjects(tooShortNumberCopy, tooShortNumber, @"Should properly truncate a phone number that is too long.");
+}
+
 @end

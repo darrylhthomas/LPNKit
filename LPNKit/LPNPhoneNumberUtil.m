@@ -171,4 +171,64 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
     return nil;
 }
 
+- (LPNPhoneNumberType)typeForPhoneNumber:(LPNPhoneNumber *)phoneNumber
+{
+    return LPNUnknownPhoneNumberType;
+}
+
+- (BOOL)isValidNumber:(LPNPhoneNumber *)phoneNumber
+{
+    return NO;
+}
+
+- (BOOL)isValidNumber:(LPNPhoneNumber *)phoneNumber forRegion:(NSString *)regionCode
+{
+    return NO;
+}
+
+- (NSString *)regionCodeForPhoneNumber:(LPNPhoneNumber *)phoneNumber
+{
+    return nil;
+}
+
+- (NSString *)regionCodeForCountryCode:(uint32_t)countryCode
+{
+    return nil;
+}
+
+- (uint32_t)countryCodeForRegion:(NSString *)regionCode
+{
+    return 0;
+}
+
+- (NSString *)nddPrefixForRegion:(NSString *)regionCode stripNonDigits:(BOOL)stripNonDigits
+{
+    return nil;
+}
+
+- (BOOL)isNANPACountry:(NSString *)regionCode
+{
+    return NO;
+}
+
+- (BOOL)isPossiblePhoneNumberString:(NSString *)phoneNumberString dialedFromRegion:(NSString *)regionCode
+{
+    return [self isPossiblePhoneNumber:[self phoneNumberByParsingString:phoneNumberString defaultRegion:regionCode keepingRawInput:NO error:nil]];
+}
+
+- (BOOL)isPossiblePhoneNumber:(LPNPhoneNumber *)phoneNumber
+{
+    return LPNPhoneNumberIsPossibleValidationResult == [self validatePhoneNumber:phoneNumber];
+}
+
+- (LPNPhoneNumberValidationResult)validatePhoneNumber:(LPNPhoneNumber *)phoneNumber
+{
+    return 0;
+}
+
+- (BOOL)truncateTooLongPhoneNumber:(LPNPhoneNumber *)phoneNumber
+{
+    return NO;
+}
+
 @end

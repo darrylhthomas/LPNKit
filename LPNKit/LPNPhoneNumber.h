@@ -51,6 +51,12 @@ typedef NS_ENUM(NSUInteger, LPNPhoneNumberFormat) {
     LPNRFC3966PhoneNumberFormat,
 };
 
+typedef NS_ENUM(NSUInteger, LPNPhoneNumberValidationResult) {
+    LPNPhoneNumberIsPossibleValidationResult,
+    LPNInvalidCountryCodeValidationResult,
+    LPNPhoneNumberIsTooShortValidationResult,
+    LPNPhoneNumberIsTooLongValidationResult,
+};
 
 @interface LPNPhoneNumber : NSObject<NSCopying>
 
