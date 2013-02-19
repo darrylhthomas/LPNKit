@@ -22,6 +22,8 @@
 #import <Foundation/Foundation.h>
 #import "LPNPhoneNumber.h"
 
+const NSInteger LPNInvalidCountryCodeError;
+
 @class LPNPhoneMetadata;
 @class LPNNumberFormat;
 
@@ -81,7 +83,15 @@
 - (BOOL)isPossiblePhoneNumberString:(NSString *)phoneNumberString dialedFromRegion:(NSString *)regionCode;
 - (BOOL)isPossiblePhoneNumber:(LPNPhoneNumber *)phoneNumber;
 - (LPNPhoneNumberValidationResult)validatePhoneNumber:(LPNPhoneNumber *)phoneNumber;
+- (BOOL)isViablePhoneNumberString:(NSString *)phoneNumberString;
 
 - (BOOL)truncateTooLongPhoneNumber:(LPNPhoneNumber *)phoneNumber;
+
+- (NSString *)extractPossiblePhoneNumberString:(NSString *)phoneNumberString;
+
+- (NSString *)maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:(NSMutableString *)phoneNumberString withMetadata:(LPNPhoneMetadata *)metadata;
+- (LPNCountryCodeSource)maybeStripInternationalPrefixAndNormalizePhoneNumberString:(NSMutableString *)phoneNumberString withPossibleIDDPrefix:(NSString *)possibleIddPrefix;
+
+- (uint32_t)maybeExtractCountryCodeFromPhoneNumberString:(NSString *)phoneNumberString withDefaultRegionMetadata:(LPNPhoneMetadata *)defaultRegionMetadata nationalNumberString:(NSMutableString *)nationalNumberString keepRawInput:(BOOL)keepRawInput phoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError *__autoreleasing*)error;
 
 @end

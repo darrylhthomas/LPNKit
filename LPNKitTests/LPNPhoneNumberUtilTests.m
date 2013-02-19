@@ -1254,4 +1254,372 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     STAssertEqualObjects(tooShortNumberCopy, tooShortNumber, @"Should properly truncate a phone number that is too long.");
 }
 
+- (void)testIsViablePhoneNumberString
+{
+    // Only one or two digits before strage, non-possible punctuation.
+    STAssertFalse([phoneUtil isViablePhoneNumberString:@"12. March"], @"Should properly determine the viability of a phone number string.");
+    STAssertFalse([phoneUtil isViablePhoneNumberString:@"1+1+1"], @"Should properly determine the viability of a phone number string.");
+    STAssertFalse([phoneUtil isViablePhoneNumberString:@"80+0"], @"Should properly determine the viability of a phone number string.");
+    STAssertFalse([phoneUtil isViablePhoneNumberString:@"00"], @"Should properly determine the viability of a phone number string.");
+
+    // Three digits is viable.
+    STAssertTrue([phoneUtil isViablePhoneNumberString:@"111"], @"Should properly determine the viability of a phone number string.");
+    
+    // Alpha numbers.
+    STAssertTrue([phoneUtil isViablePhoneNumberString:@"0800-4-pizza"], @"Should properly determine the viability of a phone number string.");
+    STAssertTrue([phoneUtil isViablePhoneNumberString:@"0800-4-PIZZA"], @"Should properly determine the viability of a phone number string.");
+}
+
+- (void)testIsViablePhoneNumberNonAscii
+{
+    // Only one or two digits before possible punctuation followed by more digits.
+    STAssertTrue([phoneUtil isViablePhoneNumberString:@"1\u300034"], @"Should properly determine the viability of a phone number string with non-ascii digits.");
+    STAssertFalse([phoneUtil isViablePhoneNumberString:@"1\u30003+4"], @"Should properly determine the viability of a phone number string with non-ascii digits.");
+    
+    // Unicode variants of possible starting character and other allowed punctuation/digits.
+    STAssertTrue([phoneUtil isViablePhoneNumberString:@"\uFF081\uFF09\u30003456789"], @"Should properly determine the viability of a phone number string with non-ascii digits.");
+
+    // Testing a leading + is okay.
+    STAssertTrue([phoneUtil isViablePhoneNumberString:@"+1\uFF09\u300003456789"], @"Should properly determine the viability of a phone number string with non-ascii digits.");
+}
+
+- (void)testExtractPossiblePhoneNumberString
+{
+    // Removes preceding funky punctuation and letters but leaves the rest untouched.
+    STAssertEqualObjects(@"0800-345-600", [phoneUtil extractPossiblePhoneNumberString:@"Tel:0800-345-600"], @"Should properly extract possible phone number strings.");
+    STAssertEqualObjects(@"0800 FOR PIZZA", [phoneUtil extractPossiblePhoneNumberString:@"Tel:0800 FOR PIZZA"], @"Should properly extract possible phone number strings.");
+    
+    // Should not remove plus sign
+    STAssertEqualObjects(@"+800-345-600", [phoneUtil extractPossiblePhoneNumberString:@"Tel:+800-345-600"], @"Should properly extract possible phone number strings.");
+
+    // Should recognize wide digits as possible start values.
+    STAssertEqualObjects(@"\uFF10\uFF12\uFF13", [phoneUtil extractPossiblePhoneNumberString:@"\uFF10\uFF12\uFF13"], @"Should properly extract possible phone number strings.");
+    
+    // Dashes are not possible start values and should be removed.
+    STAssertEqualObjects(@"\uFF11\uFF12\uFF13", [phoneUtil extractPossiblePhoneNumberString:@"Num-\uFF11\uFF12\uFF13"], @"Should properly extract possible phone number strings.");
+    
+    // If no possible number present, return empty string.
+    STAssertEqualObjects(@"", [phoneUtil extractPossiblePhoneNumberString:@"Num-...."], @"Should properly extract possible phone numbers.");
+    
+    // Leading brackets are stripped - these are not used when parsing.
+    STAssertEqualObjects(@"650) 253-0000", [phoneUtil extractPossiblePhoneNumberString:@"(650) 253-0000"], @"Should properly extract possible phone numbers.");
+    
+    // Trailing non-alpha-numeric characters should be removed.
+    STAssertEqualObjects(@"650) 253-0000", [phoneUtil extractPossiblePhoneNumberString:@"(650) 253-0000..- .."], @"Should properly extract possible phone numbers.");
+    STAssertEqualObjects(@"650) 253-0000", [phoneUtil extractPossiblePhoneNumberString:@"(650) 253-0000."], @"Should properly extract possible phone numbers.");
+    
+    // This case has a trailing RTL char.
+    STAssertEqualObjects(@"650) 253-0000", [phoneUtil extractPossiblePhoneNumberString:@"(650) 253-0000\u200F"], @"Should properly extract possible phone numbers.");
+}
+
+- (void)testMaybeStripNationalPrefix
+{
+    LPNPhoneNumberDescription *description = [[LPNPhoneNumberDescription alloc] init];
+    description.nationalNumberPattern = @"\\d{4,8}";
+    
+    LPNPhoneMetadata *metadata = [[LPNPhoneMetadata alloc] init];
+    metadata.nationalPrefixForParsing = @"34";
+    metadata.generalDescription = description;
+    
+    NSMutableString *phoneNumberStringToStrip = [@"34356778" mutableCopy];
+    NSString *strippedPhoneNumberString = @"356778";
+    
+    [phoneUtil maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:phoneNumberStringToStrip withMetadata:metadata];
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should have had national prefix stripped.");
+
+    // Retry stripping - now the number should not start with the national prefix, so no more stripping should occur.
+    [phoneUtil maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:phoneNumberStringToStrip withMetadata:metadata];
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should have had no change - no national prefix present.");
+    
+    // Some countries have no national prefix. Repeat test with none specified.
+    metadata.nationalPrefixForParsing = nil;
+    [phoneUtil maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:phoneNumberStringToStrip withMetadata:metadata];
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should not strip anything with nil national prefix.");
+    
+    metadata.nationalPrefixForParsing = @"";
+    [phoneUtil maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:phoneNumberStringToStrip withMetadata:metadata];
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should not strip anything with empty national prefix.");
+    
+    // If the resultant number doesn't match the national rule, it shouldn't be stripped.
+    metadata.nationalPrefixForParsing = @"3";
+    phoneNumberStringToStrip = [@"3123" mutableCopy];
+    strippedPhoneNumberString = @"3123";
+    [phoneUtil maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:phoneNumberStringToStrip withMetadata:metadata];
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should have had no change - after stripping, it wouldn't have matched the national rule.");
+    
+    // Test extracting carrier selection code.
+    metadata.nationalPrefixForParsing = @"0)81)?";
+    phoneNumberStringToStrip = [@"08122123456" mutableCopy];
+    strippedPhoneNumberString = @"22123456";
+    STAssertEqualObjects(@"81", [phoneUtil maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:phoneNumberStringToStrip withMetadata:metadata], @"Should properly return the carrier selection code.");
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should have had national prefix and carrier code stripped.");
+    
+    // If there was a transform rule, check it was applied.
+    metadata.nationalPrefixTransformRule = @"5$15";
+    // Note that a capturing group is present here.
+    metadata.nationalPrefixForParsing = @"0(\\d{2})";
+    phoneNumberStringToStrip = [@"031123" mutableCopy];
+    strippedPhoneNumberString = @"5315123";
+    [phoneUtil maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:phoneNumberStringToStrip withMetadata:metadata];
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should transform the 031 to a 5315.");    
+}
+
+- (void)testMaybeStripInternationalPrefix
+{
+    NSString *internationalPrefix = @"00[39]";
+    NSMutableString *phoneNumberStringToStrip = [@"0034567700-3898003" mutableCopy];
+    NSString *strippedPhoneNumberString = @"45677003898003";
+    
+    STAssertEquals(LPNCountryCodeFromNumberWithIDDSource, [phoneUtil maybeStripInternationalPrefixAndNormalizePhoneNumberString:phoneNumberStringToStrip withPossibleIDDPrefix:internationalPrefix], @"Should return the correct country code source.");
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should strip international prefix.");
+
+    // Now the number no longer starts with an IDD prefix, so it should now return as from default country.
+    STAssertEquals(LPNCountryCodeFromDefaultCountrySource, [phoneUtil maybeStripInternationalPrefixAndNormalizePhoneNumberString:phoneNumberStringToStrip withPossibleIDDPrefix:internationalPrefix], @"Should return the correct country code source.");
+    
+    phoneNumberStringToStrip = [@"00945677003898003" mutableCopy];
+    STAssertEquals(LPNCountryCodeFromNumberWithIDDSource, [phoneUtil maybeStripInternationalPrefixAndNormalizePhoneNumberString:phoneNumberStringToStrip withPossibleIDDPrefix:internationalPrefix], @"Should return the correct country code source.");
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should strip international prefix.");
+
+    // Test it works when the international prefix is broken up by spaces.
+    phoneNumberStringToStrip = [@"00 9 45677003898003" mutableCopy];
+    STAssertEquals(LPNCountryCodeFromNumberWithIDDSource, [phoneUtil maybeStripInternationalPrefixAndNormalizePhoneNumberString:phoneNumberStringToStrip withPossibleIDDPrefix:internationalPrefix], @"Should return the correct country code source.");
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should strip international prefix.");
+    
+    // Now the number no longer starts with an IDD prefix, so it should now return as from default country.
+    STAssertEquals(LPNCountryCodeFromDefaultCountrySource, [phoneUtil maybeStripInternationalPrefixAndNormalizePhoneNumberString:phoneNumberStringToStrip withPossibleIDDPrefix:internationalPrefix], @"Should return the correct country code source.");
+    
+    // Test the + symbol is also recognized and stripped.
+    phoneNumberStringToStrip = [@"+45677003898003" mutableCopy];
+    strippedPhoneNumberString = @"45677003898003";
+    STAssertEquals(LPNCountryCodeFromNumberWithPlusSignSource, [phoneUtil maybeStripInternationalPrefixAndNormalizePhoneNumberString:phoneNumberStringToStrip withPossibleIDDPrefix:internationalPrefix], @"Should return the correct country code source.");
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should strip plus symbol.");
+    
+    // If the number afterwards is a zero, we should not strip this - no country calling code begins with 0.
+    phoneNumberStringToStrip = [@"0090112-3123" mutableCopy];
+    strippedPhoneNumberString = @"00901123123";
+    STAssertEquals(LPNCountryCodeFromDefaultCountrySource, [phoneUtil maybeStripInternationalPrefixAndNormalizePhoneNumberString:phoneNumberStringToStrip withPossibleIDDPrefix:internationalPrefix], @"Should return the correct country code source.");
+    STAssertTrue([strippedPhoneNumberString isEqualToString:phoneNumberStringToStrip], @"Should not strip when a 0 follows the match.");
+    
+    // Here the 0 is separated by a space from the IDD.
+    phoneNumberStringToStrip = [@"009 0-112-3123" mutableCopy];
+    STAssertEquals(LPNCountryCodeFromDefaultCountrySource, [phoneUtil maybeStripInternationalPrefixAndNormalizePhoneNumberString:phoneNumberStringToStrip withPossibleIDDPrefix:internationalPrefix], @"Should return the correct country code source.");    
+}
+
+- (void)testMaybeExtractCountryCode
+{
+    NSError *error = nil;
+    LPNPhoneNumber *phoneNumber = [[LPNPhoneNumber alloc] init];
+    LPNPhoneMetadata *metadata = [phoneUtil metadataForRegion:@"US"];
+    // Note that for the US, the IDD is 011.
+    
+    NSString *phoneNumberString = @"011112-3456789";
+    NSString *strippedPhoneNumberString = @"123456789";
+    uint32_t countryCallingCode = 1;
+    NSMutableString *numberStringToFill = [[NSMutableString alloc] init];
+    
+    STAssertEquals(countryCallingCode, [phoneUtil maybeExtractCountryCodeFromPhoneNumberString:phoneNumberString withDefaultRegionMetadata:metadata nationalNumberString:numberStringToFill keepRawInput:YES phoneNumber:phoneNumber error:&error], @"Should extract country calling code correctly.");
+    STAssertEquals(LPNCountryCodeFromNumberWithIDDSource, phoneNumber.countryCodeSource, @"Should determine the correct country code source.");
+    
+    // Should strip and normalize national significant number.
+    STAssertTrue([strippedPhoneNumberString isEqualToString:numberStringToFill], @"Should strip off the country calling code correctly.");
+    STAssertNil(error, @"Should not have produced an error.");
+
+    [phoneNumber clear];
+    phoneNumberString = @"+6423456789";
+    countryCallingCode = 64;
+    numberStringToFill = [[NSMutableString alloc] init];
+    error = nil;
+    STAssertEquals(countryCallingCode, [phoneUtil maybeExtractCountryCodeFromPhoneNumberString:phoneNumberString withDefaultRegionMetadata:metadata nationalNumberString:numberStringToFill keepRawInput:YES phoneNumber:phoneNumber error:&error], @"Should extract country calling code correctly.");
+    STAssertEquals(LPNCountryCodeFromNumberWithPlusSignSource, phoneNumber.countryCodeSource, @"Should determine the correct country code source.");
+    STAssertNil(error, @"Should not have produced an error.");
+    
+    [phoneNumber clear];
+    phoneNumberString = @"2345-6789";
+    countryCallingCode = 0;
+    numberStringToFill = [[NSMutableString alloc] init];
+    error = nil;
+    STAssertEquals(countryCallingCode, [phoneUtil maybeExtractCountryCodeFromPhoneNumberString:phoneNumberString withDefaultRegionMetadata:metadata nationalNumberString:numberStringToFill keepRawInput:YES phoneNumber:phoneNumber error:&error], @"Should not have extracted a country calling code - no international prefix present.");
+    STAssertEquals(LPNCountryCodeFromDefaultCountrySource, phoneNumber.countryCodeSource, @"Should determine the correct country code source.");
+    STAssertNil(error, @"Should not have produced an error.");
+    
+    [phoneNumber clear];
+    phoneNumberString = @"0119991123456789";
+    countryCallingCode = 0;
+    numberStringToFill = [[NSMutableString alloc] init];
+    error = nil;
+    STAssertEquals(countryCallingCode, [phoneUtil maybeExtractCountryCodeFromPhoneNumberString:phoneNumberString withDefaultRegionMetadata:metadata nationalNumberString:numberStringToFill keepRawInput:YES phoneNumber:phoneNumber error:&error], @"Should not have extracted a country calling code - no valid country code present.");
+    STAssertNotNil(error, @"Should have produced an error.");
+    STAssertEquals(LPNInvalidCountryCodeError, [error code], @"Should produce the correct error code.");
+
+    [phoneNumber clear];
+    phoneNumberString = @"(1 610) 619 4466";
+    countryCallingCode = 1;
+    numberStringToFill = [[NSMutableString alloc] init];
+    error = nil;
+    STAssertEquals(countryCallingCode, [phoneUtil maybeExtractCountryCodeFromPhoneNumberString:phoneNumberString withDefaultRegionMetadata:metadata nationalNumberString:numberStringToFill keepRawInput:YES phoneNumber:phoneNumber error:&error], @"Should have extracted a country calling code of the region passed in.");
+    STAssertNil(error, @"Should not have produced an error.");
+    STAssertFalse(phoneNumber.hasCountryCodeSource, @"Should not contain a country code source.");
+
+    [phoneNumber clear];
+    phoneNumberString = @"(1 610) 619 446";
+    countryCallingCode = 0;
+    numberStringToFill = [[NSMutableString alloc] init];
+    error = nil;
+    STAssertEquals(countryCallingCode, [phoneUtil maybeExtractCountryCodeFromPhoneNumberString:phoneNumberString withDefaultRegionMetadata:metadata nationalNumberString:numberStringToFill keepRawInput:YES phoneNumber:phoneNumber error:&error], @"Should not have extracted a country calling code - invalid number after extraction of uncertain country calling code.");
+    STAssertNil(error, @"Should not have produced an error.");
+    STAssertFalse(phoneNumber.hasCountryCodeSource, @"Should not contain a country code source.");
+
+    [phoneNumber clear];
+    phoneNumberString = @"(1 610) 619";
+    countryCallingCode = 0;
+    numberStringToFill = [[NSMutableString alloc] init];
+    error = nil;
+    STAssertEquals(countryCallingCode, [phoneUtil maybeExtractCountryCodeFromPhoneNumberString:phoneNumberString withDefaultRegionMetadata:metadata nationalNumberString:numberStringToFill keepRawInput:YES phoneNumber:phoneNumber error:&error], @"Should not have extracted a country calling code - too short number both before and after extraction of uncertain country calling code.");
+    STAssertEquals(LPNCountryCodeFromDefaultCountrySource, phoneNumber.countryCodeSource, @"Should determine the correct country code source.");
+    STAssertNil(error, @"Should not have produced an error.");
+}
+
+- (void)testParseNationalNumber
+{
+    // National prefix attached.
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"033316005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"33316005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    
+    // National prefix attached and some formatting present.
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"03-331 6005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"03 331 6005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+
+    // Testing international prefixes
+    // Should strip country calling code.
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"0064 3 331 6005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    
+    // Try again, but this time we have an international number with region code US. It should recognize the country calling code and parse accordingly.
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"01164 3 331 6005" defaultRegion:@"US" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"+64 3 331 6005" defaultRegion:@"US" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+
+    // We should ignore the leading plus here, since it is not followed by a valid country code but instead is followed by the IDD for the US.
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"+01164 3 331 6005" defaultRegion:@"US" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"+0064 3 331 6005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    STAssertEqualObjects(nzNumber, [phoneUtil phoneNumberByParsingString:@"+ 00 64 3 331 6005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    
+    LPNPhoneNumber *testNumber = [[LPNPhoneNumber alloc] init];
+    testNumber.countryCode = 64;
+    testNumber.nationalNumber = 64123456;
+
+    STAssertEqualObjects(testNumber, [phoneUtil phoneNumberByParsingString:@"64(0)64123456" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+    
+    // Check that using a "/" is fine in a phone number.
+    STAssertEqualObjects(deNumber, [phoneUtil phoneNumberByParsingString:@"301/23456" defaultRegion:@"DE" keepingRawInput:NO error:nil], @"Should properly parse national number containing a slash.");
+    
+    // Check it doesn't use the '1' as a country calling code when parsing if the phone number was already possible.
+    testNumber = [[LPNPhoneNumber alloc] init];
+    testNumber.countryCode = 1;
+    testNumber.nationalNumber = 1234567890;
+    STAssertEqualObjects(testNumber, [phoneUtil phoneNumberByParsingString:@"123-456-7890" defaultRegion:@"US" keepingRawInput:NO error:nil], @"Should properly parse national number.");
+}
+
+- (void)testParseNumberWithAlphaCharacters
+{
+    // Test case with alpha characters.
+    LPNPhoneNumber *tollfreeNumber = [[LPNPhoneNumber alloc] init];
+    tollfreeNumber.countryCode = 64;
+    tollfreeNumber.nationalNumber = 800332005;
+    STAssertEqualObjects(tollfreeNumber, [phoneUtil phoneNumberByParsingString:@"0800 DDA 005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number with alpha characters.");
+    
+    LPNPhoneNumber *premiumNumber = [[LPNPhoneNumber alloc] init];
+    premiumNumber.countryCode = 64;
+    premiumNumber.nationalNumber = 9003326005;
+    STAssertEqualObjects(premiumNumber, [phoneUtil phoneNumberByParsingString:@"0900 DDA 6005" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number with alpha characters.");
+    
+    // Not enough alpha characters for them to be considered intentional, so they are stripped.
+    STAssertEqualObjects(premiumNumber, [phoneUtil phoneNumberByParsingString:@"0900 332 6005a" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number with alpha characters.");
+    STAssertEqualObjects(premiumNumber, [phoneUtil phoneNumberByParsingString:@"0900 332 600a5" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number with alpha characters.");
+    STAssertEqualObjects(premiumNumber, [phoneUtil phoneNumberByParsingString:@"0900 332 600A5" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number with alpha characters.");
+    STAssertEqualObjects(premiumNumber, [phoneUtil phoneNumberByParsingString:@"0900 a332 600A5" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse national number with alpha characters.");
+}
+
+- (void)testParseWithInternationalPrefixes
+{
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:@"+1 (650) 253-0000" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse with international prefix.");
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:@"1-650-253-0000" defaultRegion:@"US" keepingRawInput:NO error:nil], @"Should properly parse with international prefix.");
+
+    // Calling the US number from Singapore by using different service providers
+    // 1st test: calling using SingTel IDD serice (IDD is 001)
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:@"0011-650-253-0000" defaultRegion:@"SG" keepingRawInput:NO error:nil], @"Should properly parse with international prefix.");
+    // 2nd test: calling using StarHub IDD service (IDD is 008)
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:@"0081-650-253-0000" defaultRegion:@"SG" keepingRawInput:NO error:nil], @"Should properly parse with international prefix.");
+    // 3rd test: calling using SingTel V019 service (IDD is 019)
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:@"0191-650-253-0000" defaultRegion:@"SG" keepingRawInput:NO error:nil], @"Should properly parse with international prefix.");
+    
+    // Calling the US number from Poland
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:@"0~01-650-253-0000" defaultRegion:@"PL" keepingRawInput:NO error:nil], @"Should properly parse with international prefix.");
+    // Using "++" at the start
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:@"++1 (650) 253-0000" defaultRegion:@"PL" keepingRawInput:NO error:nil], @"Should properly parse with international prefix.");
+}
+
+- (void)testParseNonAscii
+{
+    // Using a full-width plus sign.
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:@"\uFF0B1 (650) 253-0000" defaultRegion:@"SG" keepingRawInput:NO error:nil], @"Should properly parse with non-ascii characters.");
+    
+    // The whole number, including punctuation, is here represented in full-width form.
+    NSString *fullWidthPhoneNumberString = @"\uFF0B\uFF11\u3000\uFF08\uFF16\uFF15\uFF10\uFF09\u3000\uFF12\uFF15\uFF13\uFF0D\uFF10\uFF10\uFF10\uFF10";
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:fullWidthPhoneNumberString defaultRegion:@"SG" keepingRawInput:NO error:nil], @"Should properly parse with non-ascii characters.");
+    
+    // Using U+30FC dash instead.
+    fullWidthPhoneNumberString = @"\uFF0B\uFF11\u3000\uFF08\uFF16\uFF15\uFF10\uFF09\u3000\uFF12\uFF15\uFF13\u30FC\uFF10\uFF10\uFF10\uFF10";
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:fullWidthPhoneNumberString defaultRegion:@"SG" keepingRawInput:NO error:nil], @"Should properly parse with non-ascii characters.");
+
+    // Using a very strange decimal digit range (Mongolian digits).
+    fullWidthPhoneNumberString = @"\u1811 \u1816\u1815\u1810 \u1812\u1815\u1813 \u1810\u1810\u1810\u1810";
+    STAssertEqualObjects(usNumber, [phoneUtil phoneNumberByParsingString:fullWidthPhoneNumberString defaultRegion:@"US" keepingRawInput:NO error:nil], @"Should properly parse with non-ascii characters.");
+    
+}
+
+- (void)testParseWithLeadingZero
+{
+    STAssertEqualObjects(itNumber, [phoneUtil phoneNumberByParsingString:@"+39 02-36618 300" defaultRegion:@"NZ" keepingRawInput:NO error:nil], @"Should properly parse with leading zero.");
+    STAssertEqualObjects(itNumber, [phoneUtil phoneNumberByParsingString:@"02-36618 300" defaultRegion:@"IT" keepingRawInput:NO error:nil], @"Should properly parse with leading zero.");
+    
+    STAssertEqualObjects(itMobile, [phoneUtil phoneNumberByParsingString:@"345 678 901" defaultRegion:@"IT" keepingRawInput:NO error:nil], @"Should properly parse with leading zero.");
+}
+
+- (void)testParseNationalNumberArgentina
+{
+#define DontCryForMeArgentina(obj1,obj2,comment) do { STAssertEqualObjects(obj1,obj2,comment); } while(0)
+
+    // Test parsing mobile numbers of Argentina
+    LPNPhoneNumber *testPhoneNumber = [[LPNPhoneNumber alloc] init];
+    testPhoneNumber.countryCode = 54;
+    testPhoneNumber.nationalNumber = 93435551212;
+    DontCryForMeArgentina(testPhoneNumber, [phoneUtil phoneNumberByParsingString:@"+54 9 343 555 1212" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    DontCryForMeArgentina(testPhoneNumber, [phoneUtil phoneNumberByParsingString:@"0343 15 555 1212" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+
+    [testPhoneNumber clear];
+    testPhoneNumber.countryCode = 54;
+    testPhoneNumber.nationalNumber = 93715654320;
+    DontCryForMeArgentina(testPhoneNumber, [phoneUtil phoneNumberByParsingString:@"+54 9 3715 65 4320" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    DontCryForMeArgentina(testPhoneNumber, [phoneUtil phoneNumberByParsingString:@"03715 15 65 4320" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    
+    DontCryForMeArgentina(arMobile, [phoneUtil phoneNumberByParsingString:@"911 876 54321" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    
+    // Test parsing fixed-line numbers of Argentina
+    DontCryForMeArgentina(arNumber, [phoneUtil phoneNumberByParsingString:@"+54 11 8765 4321" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    DontCryForMeArgentina(arMobile, [phoneUtil phoneNumberByParsingString:@"011 8765 4321" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    
+    [testPhoneNumber clear];
+    testPhoneNumber.countryCode = 54;
+    testPhoneNumber.nationalNumber = 3715654321;
+    DontCryForMeArgentina(testPhoneNumber, [phoneUtil phoneNumberByParsingString:@"+54 11 8765 4321" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    DontCryForMeArgentina(testPhoneNumber, [phoneUtil phoneNumberByParsingString:@"03715 65 4321" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    
+    [testPhoneNumber clear];
+    testPhoneNumber.countryCode = 54;
+    testPhoneNumber.nationalNumber = 2312340000;
+    DontCryForMeArgentina(testPhoneNumber, [phoneUtil phoneNumberByParsingString:@"+54 23 1234 0000" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+    DontCryForMeArgentina(testPhoneNumber, [phoneUtil phoneNumberByParsingString:@"023 1234 0000" defaultRegion:@"AR" keepingRawInput:NO error:nil], @"Should properly parse national numbers for Argentina");
+
+#undef DontCryForMeArgentina
+}
+
 @end

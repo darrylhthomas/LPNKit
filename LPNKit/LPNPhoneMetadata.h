@@ -29,11 +29,11 @@
 @property (nonatomic, assign, readonly) NSUInteger countryCode;
 @property (nonatomic, copy, readonly) NSString *internationalDialingPrefix;
 @property (nonatomic, copy, readonly) NSString *nationalPrefix;
-@property (nonatomic, copy, readonly) NSString *nationalPrefixForParsing;
-@property (nonatomic, copy, readonly) NSString *nationalPrefixTransformRule;
+@property (nonatomic, copy) NSString *nationalPrefixForParsing;
+@property (nonatomic, copy) NSString *nationalPrefixTransformRule;
 @property (nonatomic, retain, readonly) NSArray *numberFormats;
 @property (nonatomic, copy, readonly) NSArray *internationalNumberFormats;
-@property (nonatomic, retain, readonly) LPNPhoneNumberDescription *generalDescription;
+@property (nonatomic, retain) LPNPhoneNumberDescription *generalDescription;
 @property (nonatomic, retain, readonly) LPNPhoneNumberDescription *fixedLineDescription;
 @property (nonatomic, retain, readonly) LPNPhoneNumberDescription *tollFreeDescription;
 @property (nonatomic, retain, readonly) LPNPhoneNumberDescription *premiumRateDescription;

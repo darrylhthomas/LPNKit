@@ -21,6 +21,8 @@
 
 #import "LPNPhoneNumberUtil.h"
 
+const NSInteger LPNInvalidCountryCodeError = 999;
+
 static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 
 @implementation LPNPhoneNumberUtil
@@ -229,6 +231,31 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 - (BOOL)truncateTooLongPhoneNumber:(LPNPhoneNumber *)phoneNumber
 {
     return NO;
+}
+
+- (BOOL)isViablePhoneNumberString:(NSString *)phoneNumberString
+{
+    return NO;
+}
+
+- (NSString *)extractPossiblePhoneNumberString:(NSString *)phoneNumberString
+{
+    return nil;
+}
+
+- (NSString *)maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:(NSMutableString *)phoneNumberString withMetadata:(LPNPhoneMetadata *)metadata
+{
+    return nil;
+}
+
+- (LPNCountryCodeSource)maybeStripInternationalPrefixAndNormalizePhoneNumberString:(NSMutableString *)phoneNumberString withPossibleIDDPrefix:(NSString *)possibleIddPrefix
+{
+    return 0;
+}
+
+- (uint32_t)maybeExtractCountryCodeFromPhoneNumberString:(NSString *)phoneNumberString withDefaultRegionMetadata:(LPNPhoneMetadata *)defaultRegionMetadata nationalNumberString:(NSMutableString *)nationalNumberString keepRawInput:(BOOL)keepRawInput phoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError **)error
+{
+    return 0;
 }
 
 @end

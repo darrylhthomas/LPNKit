@@ -23,7 +23,7 @@
 
 @interface LPNPhoneNumberDescription : NSObject
 
-@property (nonatomic, copy, readonly) NSString *nationalNumberPattern;
+@property (nonatomic, copy) NSString *nationalNumberPattern;
 @property (nonatomic, copy, readonly) NSString *possibleNumberPattern;
 @property (nonatomic, copy, readonly) NSString *exampleNumber;
 
