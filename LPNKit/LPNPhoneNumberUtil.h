@@ -26,7 +26,7 @@ extern NSString *const LPNParsingErrorDomain;
 
 NS_ENUM(NSInteger, LPNParsingError) {
     LPNInvalidCountryCodeParsingError = 5551212,
-    LPNNotAtNumberParsingError,
+    LPNNotANumberParsingError,
     LPNTooShortAfterIDDParsingError,
     LPNTooShortNSNParsingError,
     LPNTooLongParsingError,

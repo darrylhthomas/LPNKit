@@ -1665,7 +1665,7 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     
     STAssertNil([phoneUtil phoneNumberByParsingString:testString defaultRegion:@"NZ" keepingRawInput:NO error:&error], @"Should fail when parsing invalid numbers.");
     STAssertTrue([[error domain] isEqualToString:LPNParsingErrorDomain], @"Error should have the correct domain.");
-    STAssertEquals(LPNNotAtNumberParsingError, [error code], @"Should return an error with the correct code.");
+    STAssertEquals(LPNNotANumberParsingError, [error code], @"Should return an error with the correct code.");
     
     error = nil;
     testString = @"01495 72553301873 810104";
@@ -1677,7 +1677,7 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     testString = @"+---";
     
     STAssertNil([phoneUtil phoneNumberByParsingString:testString defaultRegion:@"DE" keepingRawInput:NO error:&error], @"Should fail when parsing invalid numbers.");
-    STAssertEquals(LPNNotAtNumberParsingError, [error code], @"Should return an error with the correct code.");
+    STAssertEquals(LPNNotANumberParsingError, [error code], @"Should return an error with the correct code.");
     
     error = nil;
     testString = @"+49 0";
@@ -1743,18 +1743,18 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     testString = @"";
     // Invalid region
     STAssertNil([phoneUtil phoneNumberByParsingString:testString defaultRegion:@"ZZ" keepingRawInput:NO error:&error], @"Should fail when parsing an empty string.");
-    STAssertEquals(LPNNotAtNumberParsingError, [error code], @"Should return an error with the correct code.");
+    STAssertEquals(LPNNotANumberParsingError, [error code], @"Should return an error with the correct code.");
     
     error = nil;
     testString = nil;
     // Invalid region
     STAssertNil([phoneUtil phoneNumberByParsingString:testString defaultRegion:@"ZZ" keepingRawInput:NO error:&error], @"Should fail when parsing a nil string.");
-    STAssertEquals(LPNNotAtNumberParsingError, [error code], @"Should return an error with the correct code.");
+    STAssertEquals(LPNNotANumberParsingError, [error code], @"Should return an error with the correct code.");
     
     error = nil;
     testString = nil;
     STAssertNil([phoneUtil phoneNumberByParsingString:testString defaultRegion:@"US" keepingRawInput:NO error:&error], @"Should fail when parsing a nil string.");
-    STAssertEquals(LPNNotAtNumberParsingError, [error code], @"Should return an error with the correct code.");    
+    STAssertEquals(LPNNotANumberParsingError, [error code], @"Should return an error with the correct code.");    
 }
 
 - (void)testParseNumbersWithPlusWithNoRegion
@@ -1923,7 +1923,7 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     STAssertFalse([phoneUtil isValidNumber:testNumber], @"Unknown country calling codes should not validate.");
 }
 
-- (void)testMatchPhoneNumberStringAgainstStringMatches
+- (void)testMatchPhoneNumberMatches
 {
     // Test simple matches where formatting is different, or leading zeroes, or country calling code has been specified.
     
@@ -1971,6 +1971,56 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     testNumber2.rawInput = @"143121286979";
     
     STAssertEquals(LPNExactMatchType, [phoneUtil matchPhoneNumber:testNumber againstPhoneNumber:testNumber2], @"Should ignore raw input, country code source and preferred domestic carrier code.");
+}
+
+- (void)testMatchPhoneNumberNonMatches
+{
+    // Non-matches.
+    STAssertEquals(LPNNoMatchType, [phoneUtil matchPhoneNumberString:@"03 331 6005" againstString:@"03 331 6006"], @"Should correctly match phone number strings.");
+    
+    // Different country calling code, partial number match.
+    STAssertEquals(LPNNoMatchType, [phoneUtil matchPhoneNumberString:@"+64 3 331-6005" againstString:@"+16433316005"], @"Should correctly match phone number strings.");
+    
+    // Different country calling code, same number.
+    STAssertEquals(LPNNoMatchType, [phoneUtil matchPhoneNumberString:@"+64 3 331-6005" againstString:@"+6133316005"], @"Should correctly match phone number strings.");
+    
+    // Extension different, all else the same.
+    STAssertEquals(LPNNoMatchType, [phoneUtil matchPhoneNumberString:@"+64 3 331-6005 extn 1234" againstString:@"0116433316005#1235"], @"Should correctly match phone number strings.");
+    
+    // NSN matches, but extension is different - not the same number.
+    STAssertEquals(LPNNoMatchType, [phoneUtil matchPhoneNumberString:@"+64 3 331-6005 ext.1235" againstString:@"3 331 6005#1234"], @"Should correctly match phone number strings.");
+    
+    // Invalid numbers that can't be parsed.
+    STAssertEquals(LPNNotANumberMatchType, [phoneUtil matchPhoneNumberString:@"43" againstString:@"3 331 6043"], @"Should correctly match phone number strings.");
+    STAssertEquals(LPNNotANumberMatchType, [phoneUtil matchPhoneNumberString:@"+43" againstString:@"+64 3 331 6005"], @"Should correctly match phone number strings.");
+    STAssertEquals(LPNNotANumberMatchType, [phoneUtil matchPhoneNumberString:@"+43" againstString:@"64 3 331 6005"], @"Should correctly match phone number strings.");
+    STAssertEquals(LPNNotANumberMatchType, [phoneUtil matchPhoneNumberString:@"Dog" againstString:@"64 3 331 6005"], @"Should correctly match phone number strings.");
+}
+
+- (void)testMatchPhoneNumberNSNMatches
+{
+    // NSN Matches.
+    STAssertEquals(LPNNSNMatchType, [phoneUtil matchPhoneNumberString:@"+64 3 331-6005" againstString:@"03 331 6005"], @"Should properly match NSN matches.");
+    STAssertEquals(LPNNSNMatchType, [phoneUtil matchPhoneNumber:nzNumber againstString:@"03 331 6005"], @"Should properly match NSN matches.");
+    
+    // Here the second number possibly starts with the country calling code for New Zealand, although we are unsure.
+    LPNPhoneNumber *testNumber = [nzNumber copy];
+    STAssertEquals(LPNNSNMatchType, [phoneUtil matchPhoneNumber:testNumber againstString:@"(64-3) 331 6005"], @"Should properly match NSN matches.");
+    // Check the phone number was not edited during the method call.
+    STAssertEqualObjects(nzNumber, testNumber, @"Number should not be modified when testing for a match.");
+    
+    // Here, the 1 might be a national prefix, if we compare it to the US number, so the resultant match is an NSN match.
+    STAssertEquals(LPNNSNMatchType, [phoneUtil matchPhoneNumber:usNumber againstString:@"1-650-253-0000"], @"Should properly match NSN matches.");
+    STAssertEquals(LPNNSNMatchType, [phoneUtil matchPhoneNumber:usNumber againstString:@"6502530000"], @"Should properly match NSN matches.");
+    STAssertEquals(LPNNSNMatchType, [phoneUtil matchPhoneNumberString:@"+1 650-253 0000" againstString:@"1 650 253 0000"], @"Should properly match NSN matches.");
+    STAssertEquals(LPNNSNMatchType, [phoneUtil matchPhoneNumberString:@"1 650-253 0000" againstString:@"1 650 253 0000"], @"Should properly match NSN matches.");
+    STAssertEquals(LPNNSNMatchType, [phoneUtil matchPhoneNumberString:@"1 650-253 0000" againstString:@"+1 650 253 0000"], @"Should properly match NSN matches.");
+    
+    // For this case, the match will be a short NSN match, because we cannot assume that the 1 might be a national prefix, so don't remove it when parsing.
+    testNumber = [[LPNPhoneNumber alloc] init];
+    testNumber.countryCode = 41;
+    testNumber.nationalNumber = 6502530000;
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumber:testNumber againstString:@"1-650-253-0000"], @"Should properly match NSN matches.");
 }
 
 @end
