@@ -346,4 +346,14 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
     return LPNNotANumberMatchType;
 }
 
+- (BOOL)phoneNumberCanBeInternationallyDialled:(LPNPhoneNumber *)phoneNumber
+{
+    return NO;
+}
+
+- (BOOL)isAlphaPhoneNumberString:(NSString *)phoneNumberString
+{
+    return NO;
+}
+
 @end

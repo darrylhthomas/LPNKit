@@ -2023,4 +2023,63 @@ static LPNPhoneNumber *usSpoofWithRawInput = nil;
     STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumber:testNumber againstString:@"1-650-253-0000"], @"Should properly match NSN matches.");
 }
 
+- (void)testMatchPhoneNumberShortNSNMatches
+{
+    // Short NSN matches with the country not specified for either one or both numbers.
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumberString:@"+64 3 331-6005" againstString:@"331 6005"], @"Should properly match short NSN matches.");
+    
+    // We did not know that the "0" was a national prefix since neither number has a country code, so this is considered a short nsn match.
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumberString:@"3 331-6005" againstString:@"03 331 6005"], @"Should properly match short NSN matches.");
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumberString:@"3 331-6005" againstString:@"331 6005"], @"Should properly match short NSN matches.");
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumberString:@"3 331-6005" againstString:@"+64 331 6005"], @"Should properly match short NSN matches.");
+    
+    // Short NSN match with the country specified.
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumberString:@"03 331-6005" againstString:@"331 6005"], @"Should properly match short NSN matches.");
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumberString:@"1 234 345 6789" againstString:@"345 6789"], @"Should properly match short NSN matches.");
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumberString:@"+1 (234) 345 6789" againstString:@"345 6789"], @"Should properly match short NSN matches.");
+    
+    // NSN matches, country calling code omitted for one number, extension missing for one.
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumberString:@"+64 3 331-6005" againstString:@"3 331 6005#1234"], @"Should properly match short NSN matches.");
+    
+    // One has Italian leading zero, one does not.
+    LPNPhoneNumber *testNumber1 = [[LPNPhoneNumber alloc] init];
+    testNumber1.countryCode = 39;
+    testNumber1.nationalNumber = 1234;
+    testNumber1.italianLeadingZero = YES;
+    
+    LPNPhoneNumber *testNumber2 = [[LPNPhoneNumber alloc] init];
+    testNumber2.countryCode = 39;
+    testNumber2.nationalNumber = 1234;
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumber:testNumber1 againstPhoneNumber:testNumber2], @"Should properly match short NSN matches.");
+    
+    // One has an extension, the other has an extension of "".
+    testNumber1.extension = @"1234";
+    [testNumber1 clearItalianLeadingZero];
+    testNumber2.extension = @"";
+    STAssertEquals(LPNShortNSNMatchType, [phoneUtil matchPhoneNumber:testNumber1 againstPhoneNumber:testNumber2], @"Should properly match short NSN matches.");
+}
+
+- (void)testCanBeInternationallyDialled
+{
+    // We have no-international-dialling rules for the US in our test metadata that say that toll-free numbers cannot be dialled internationally.
+    STAssertFalse([phoneUtil phoneNumberCanBeInternationallyDialled:usTollfree], @"Should properly determine whether a phone number can be internationally dialled.");
+
+    // Normal US numbers can be internationally dialled.
+    STAssertTrue([phoneUtil phoneNumberCanBeInternationallyDialled:usNumber], @"Should properly determine whether a phone number can be internationally dialled.");
+
+    // Invalid number.
+    STAssertTrue([phoneUtil phoneNumberCanBeInternationallyDialled:usLocalNumber], @"Should properly determine whether a phone number can be internationally dialled.");
+
+    // We have no data for NZ - should return true.
+    STAssertTrue([phoneUtil phoneNumberCanBeInternationallyDialled:nzNumber], @"Should properly determine whether a phone number can be internationally dialled.");
+}
+
+- (void)testIsAlphaNumber
+{
+    STAssertTrue([phoneUtil isAlphaPhoneNumberString:@"1800 six-flags"], @"Should properly determine whether a phone number string contains alpha digits.");
+    STAssertTrue([phoneUtil isAlphaPhoneNumberString:@"1800 six-flags ext. 1234"], @"Should properly determine whether a phone number string contains alpha digits.");
+    STAssertFalse([phoneUtil isAlphaPhoneNumberString:@"1800 123-1234"], @"Should properly determine whether a phone number string contains alpha digits.");
+    STAssertFalse([phoneUtil isAlphaPhoneNumberString:@"1800 123-1234 extension: 1234"], @"Should properly determine whether a phone number string contains alpha digits.");
+}
+
 @end

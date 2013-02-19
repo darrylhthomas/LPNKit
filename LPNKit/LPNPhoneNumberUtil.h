@@ -114,4 +114,8 @@ typedef NS_ENUM(NSUInteger, LPNMatchType) {
 - (LPNMatchType)matchPhoneNumber:(LPNPhoneNumber *)phoneNumber againstString:(NSString *)phoneNumberString;
 - (LPNMatchType)matchPhoneNumberString:(NSString *)phoneNumberString1 againstString:(NSString *)phoneNumberString2;
 
+- (BOOL)phoneNumberCanBeInternationallyDialled:(LPNPhoneNumber *)phoneNumber;
+
+- (BOOL)isAlphaPhoneNumberString:(NSString *)phoneNumberString;
+
 @end
