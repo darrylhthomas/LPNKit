@@ -22,7 +22,23 @@
 #import <Foundation/Foundation.h>
 #import "LPNPhoneNumber.h"
 
-const NSInteger LPNInvalidCountryCodeError;
+extern NSString *const LPNParsingErrorDomain;
+
+NS_ENUM(NSInteger, LPNParsingError) {
+    LPNInvalidCountryCodeParsingError = 5551212,
+    LPNNotAtNumberParsingError,
+    LPNTooShortAfterIDDParsingError,
+    LPNTooShortNSNParsingError,
+    LPNTooLongParsingError,
+};
+
+typedef NS_ENUM(NSUInteger, LPNMatchType) {
+    LPNNotANumberMatchType,
+    LPNNoMatchType,
+    LPNShortNSNMatchType,
+    LPNNSNMatchType,
+    LPNExactMatchType,
+};
 
 @class LPNPhoneMetadata;
 @class LPNNumberFormat;
@@ -93,5 +109,9 @@ const NSInteger LPNInvalidCountryCodeError;
 - (LPNCountryCodeSource)maybeStripInternationalPrefixAndNormalizePhoneNumberString:(NSMutableString *)phoneNumberString withPossibleIDDPrefix:(NSString *)possibleIddPrefix;
 
 - (uint32_t)maybeExtractCountryCodeFromPhoneNumberString:(NSString *)phoneNumberString withDefaultRegionMetadata:(LPNPhoneMetadata *)defaultRegionMetadata nationalNumberString:(NSMutableString *)nationalNumberString keepRawInput:(BOOL)keepRawInput phoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError *__autoreleasing*)error;
+
+- (LPNMatchType)matchPhoneNumber:(LPNPhoneNumber *)phoneNumber1 againstPhoneNumber:(LPNPhoneNumber *)phoneNumber2;
+- (LPNMatchType)matchPhoneNumber:(LPNPhoneNumber *)phoneNumber againstString:(NSString *)phoneNumberString;
+- (LPNMatchType)matchPhoneNumberString:(NSString *)phoneNumberString1 againstString:(NSString *)phoneNumberString2;
 
 @end

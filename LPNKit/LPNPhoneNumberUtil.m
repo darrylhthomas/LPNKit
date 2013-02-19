@@ -21,9 +21,18 @@
 
 #import "LPNPhoneNumberUtil.h"
 
-const NSInteger LPNInvalidCountryCodeError = 999;
+NSString *const LPNParsingErrorDomain = @"LPNParsingErrorDomain";
+
+NSString *const LPNUnknownRegionCode = @"ZZ";
 
 static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
+
+@interface LPNPhoneNumberUtil ()
+
+- (BOOL)parseString:(NSString *)numberToParse defaultRegion:(NSString *)defaultRegion keeepingRawInput:(BOOL)keepRawInput checkingRegion:(BOOL)checkRegion intoPhoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError *__autoreleasing*)error;
+
+@end
+
 
 @implementation LPNPhoneNumberUtil
 
@@ -165,6 +174,14 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 
 - (BOOL)parseString:(NSString *)numberToParse defaultRegion:(NSString *)defaultRegion keeepingRawInput:(BOOL)keepRawInput intoPhoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError **)error
 {
+    return [self parseString:numberToParse defaultRegion:defaultRegion keeepingRawInput:keepRawInput checkingRegion:YES intoPhoneNumber:phoneNumber error:error];
+}
+
+- (BOOL)parseString:(NSString *)numberToParse defaultRegion:(NSString *)defaultRegion keeepingRawInput:(BOOL)keepRawInput checkingRegion:(BOOL)checkRegion intoPhoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError **)error
+{
+    if (error) {
+        *error = [[NSError alloc] initWithDomain:LPNParsingErrorDomain code:LPNInvalidCountryCodeParsingError userInfo:nil];
+    }
     return NO;
 }
 
@@ -256,6 +273,77 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 - (uint32_t)maybeExtractCountryCodeFromPhoneNumberString:(NSString *)phoneNumberString withDefaultRegionMetadata:(LPNPhoneMetadata *)defaultRegionMetadata nationalNumberString:(NSMutableString *)nationalNumberString keepRawInput:(BOOL)keepRawInput phoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError **)error
 {
     return 0;
+}
+
+- (LPNMatchType)matchPhoneNumber:(LPNPhoneNumber *)phoneNumber1 againstPhoneNumber:(LPNPhoneNumber *)phoneNumber2
+{
+    return LPNNoMatchType;
+}
+
+- (LPNMatchType)matchPhoneNumber:(LPNPhoneNumber *)phoneNumber1 againstString:(NSString *)phoneNumberString2
+{
+    NSError *error = nil;
+    LPNPhoneNumber *phoneNumber2 = [self phoneNumberByParsingString:phoneNumberString2 defaultRegion:nil keepingRawInput:NO error:&error];
+    if (phoneNumber2)
+        return [self matchPhoneNumber:phoneNumber1 againstPhoneNumber:phoneNumber2];
+    
+    if ([error code] == LPNInvalidCountryCodeValidationResult) {
+        error = nil;
+        
+        // The second number has no country calling code. Exact match is no longer possible.
+        // We parse it as if the region were the same as that for the first number, and if an exact match is returned, we replace this with an nsn match.
+        
+        NSString *phoneNumber1Region = [self regionCodeForCountryCode:phoneNumber1.countryCode];
+        if (![LPNUnknownRegionCode isEqualToString:phoneNumber1Region]) {
+            phoneNumber2 = [self phoneNumberByParsingString:phoneNumberString2 defaultRegion:phoneNumber1Region keepingRawInput:NO error:&error];
+            if (phoneNumber2) {
+                LPNMatchType result = [self matchPhoneNumber:phoneNumber1 againstPhoneNumber:phoneNumber2];
+                if (result == LPNExactMatchType) {
+                    
+                    return LPNNSNMatchType;
+                }
+                
+                return result;
+            }
+        } else {
+            phoneNumber2 = [[LPNPhoneNumber alloc] init];
+            if ([self parseString:phoneNumberString2 defaultRegion:nil keeepingRawInput:NO checkingRegion:NO intoPhoneNumber:phoneNumber2 error:&error]) {
+                
+                return [self matchPhoneNumber:phoneNumber1 againstPhoneNumber:phoneNumber2];
+            }
+        }
+    }
+    
+    return LPNNotANumberMatchType;
+}
+
+- (LPNMatchType)matchPhoneNumberString:(NSString *)phoneNumberString1 againstString:(NSString *)phoneNumberString2
+{
+    NSError *error = nil;
+    LPNPhoneNumber *phoneNumber1 = [self phoneNumberByParsingString:phoneNumberString1 defaultRegion:LPNUnknownRegionCode keepingRawInput:NO error:&error];
+    
+    if (phoneNumber1)
+        return [self matchPhoneNumber:phoneNumber1 againstString:phoneNumberString2];
+    
+    if ([error code] == LPNInvalidCountryCodeParsingError) {
+        error = nil;
+        LPNPhoneNumber *phoneNumber2 = [self phoneNumberByParsingString:phoneNumberString2 defaultRegion:LPNUnknownRegionCode keepingRawInput:NO error:&error];
+        
+        if (phoneNumberString2)
+            return [self matchPhoneNumber:phoneNumber2 againstString:phoneNumberString1];
+        
+        if ([error code] == LPNInvalidCountryCodeParsingError) {
+            phoneNumber1 = [[LPNPhoneNumber alloc] init];
+            phoneNumber2 = [[LPNPhoneNumber alloc] init];
+
+            if ([self parseString:phoneNumberString1 defaultRegion:nil keeepingRawInput:NO checkingRegion:NO intoPhoneNumber:phoneNumber1 error:nil] && [self parseString:phoneNumberString2 defaultRegion:nil keeepingRawInput:NO checkingRegion:NO intoPhoneNumber:phoneNumber2 error:nil]) {
+                
+                return [self matchPhoneNumber:phoneNumber1 againstPhoneNumber:phoneNumber2];
+            }
+        }
+    }
+    
+    return LPNNotANumberMatchType;
 }
 
 @end
