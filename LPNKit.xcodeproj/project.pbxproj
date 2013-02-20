@@ -58,9 +58,9 @@
 		3EF2AD1F146A20340012AC16 /* LPNPhoneNumber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LPNPhoneNumber.h; sourceTree = "<group>"; };
 		3EF2AD20146A20340012AC16 /* LPNPhoneNumber.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LPNPhoneNumber.m; sourceTree = "<group>"; };
 		3EF2AD29146AF7AF0012AC16 /* LPNPhoneNumberUtilTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LPNPhoneNumberUtilTests.h; sourceTree = "<group>"; };
-		3EF2AD2A146AF7AF0012AC16 /* LPNPhoneNumberUtilTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LPNPhoneNumberUtilTests.m; sourceTree = "<group>"; };
+		3EF2AD2A146AF7AF0012AC16 /* LPNPhoneNumberUtilTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = LPNPhoneNumberUtilTests.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		3EF2AD2D146B092B0012AC16 /* LPNPhoneNumberUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LPNPhoneNumberUtil.h; sourceTree = "<group>"; };
-		3EF2AD2E146B092B0012AC16 /* LPNPhoneNumberUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LPNPhoneNumberUtil.m; sourceTree = "<group>"; };
+		3EF2AD2E146B092B0012AC16 /* LPNPhoneNumberUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = LPNPhoneNumberUtil.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		444037B5146A481F0028A134 /* LPNPhoneNumberTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LPNPhoneNumberTests.h; sourceTree = "<group>"; };
 		444037B6146A481F0028A134 /* LPNPhoneNumberTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LPNPhoneNumberTests.m; sourceTree = "<group>"; };
 		444037BC146A6D810028A134 /* LPNPhoneNumberMatchTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LPNPhoneNumberMatchTests.h; sourceTree = "<group>"; };

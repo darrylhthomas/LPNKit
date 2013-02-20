@@ -40,6 +40,9 @@ typedef NS_ENUM(NSUInteger, LPNMatchType) {
     LPNExactMatchType,
 };
 
+extern NSString *const LPNUnknownRegionCode;
+extern NSString *const LPNNonGeoEntityRegionCode;
+
 @class LPNPhoneMetadata;
 @class LPNNumberFormat;
 
@@ -50,13 +53,19 @@ typedef NS_ENUM(NSUInteger, LPNMatchType) {
 +(id)sharedPhoneNumberUtil;
 +(void)resetSharedPhoneNumberUtil;
 
+- (void)loadMetadataFromFile:(NSString *)filePath forRegion:(NSString *)regionCode countryCallingCode:(NSUInteger)countryCallingCode;
+- (void)loadMetaDataFromURL:(NSURL *)fileURL forRegion:(NSString *)regionCode countryCallingCode:(NSUInteger)countryCallingCode;
+
 - (LPNPhoneMetadata *)metadataForRegion:(NSString *)regionCode;
+- (LPNPhoneMetadata *)metadataForNonGeographicalRegion:(NSUInteger)countryCallingCode;
+
 - (BOOL)isLeadingZeroPossibleForCountryCallingCode:(NSUInteger)countryCallingCode;
 - (NSUInteger)lengthOfGeographicalAreaCodeForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
 - (NSUInteger)lengthOfNationalDestinationCodeForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
 - (NSString *)nationalSignificantNumberForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
 
 - (LPNPhoneNumber *)examplePhoneNumberForRegion:(NSString *)regionCode;
+- (LPNPhoneNumber *)examplePhoneNumberForNonGeographicalEntity:(NSUInteger)countryCallingCode;
 - (LPNPhoneNumber *)examplePhoneNumberOfType:(LPNPhoneNumberType)numberType forRegion:(NSString *)regionCode;
 
 - (NSString *)stringByConvertingAlphaCharactersInNumberString:(NSString *)numberString;
@@ -90,6 +99,7 @@ typedef NS_ENUM(NSUInteger, LPNMatchType) {
 
 - (NSString *)regionCodeForPhoneNumber:(LPNPhoneNumber *)phoneNumber;
 - (NSString *)regionCodeForCountryCode:(uint32_t)countryCode;
+- (NSArray *)regionCodesForCountryCode:(uint32_t)countryCode;
 - (uint32_t)countryCodeForRegion:(NSString *)regionCode;
 
 - (NSString *)nddPrefixForRegion:(NSString *)regionCode stripNonDigits:(BOOL)stripNonDigits;
@@ -105,7 +115,7 @@ typedef NS_ENUM(NSUInteger, LPNMatchType) {
 
 - (NSString *)extractPossiblePhoneNumberString:(NSString *)phoneNumberString;
 
-- (NSString *)maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:(NSMutableString *)phoneNumberString withMetadata:(LPNPhoneMetadata *)metadata;
+- (BOOL)maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:(NSMutableString *)phoneNumberString withMetadata:(LPNPhoneMetadata *)metadata strippedContents:(NSString *__autoreleasing*)outStrippedContents;
 - (LPNCountryCodeSource)maybeStripInternationalPrefixAndNormalizePhoneNumberString:(NSMutableString *)phoneNumberString withPossibleIDDPrefix:(NSString *)possibleIddPrefix;
 
 - (uint32_t)maybeExtractCountryCodeFromPhoneNumberString:(NSString *)phoneNumberString withDefaultRegionMetadata:(LPNPhoneMetadata *)defaultRegionMetadata nationalNumberString:(NSMutableString *)nationalNumberString keepRawInput:(BOOL)keepRawInput phoneNumber:(LPNPhoneNumber *)phoneNumber error:(NSError *__autoreleasing*)error;
@@ -117,5 +127,7 @@ typedef NS_ENUM(NSUInteger, LPNMatchType) {
 - (BOOL)phoneNumberCanBeInternationallyDialled:(LPNPhoneNumber *)phoneNumber;
 
 - (BOOL)isAlphaPhoneNumberString:(NSString *)phoneNumberString;
+
+- (BOOL)phoneNumberIsGeographical:(LPNPhoneNumber *)phoneNumber;
 
 @end

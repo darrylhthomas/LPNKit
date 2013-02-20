@@ -24,6 +24,7 @@
 NSString *const LPNParsingErrorDomain = @"LPNParsingErrorDomain";
 
 NSString *const LPNUnknownRegionCode = @"ZZ";
+NSString *const LPNNonGeoEntityRegionCode = @"001";
 
 static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 
@@ -53,12 +54,26 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
     [sharedPhoneNumberUtil release], sharedPhoneNumberUtil = nil;
 }
 
+- (void)loadMetadataFromFile:(NSString *)filePath forRegion:(NSString *)regionCode countryCallingCode:(NSUInteger)countryCallingCode
+{
+    NSURL *url = [NSURL fileURLWithPath:filePath];
+    [self loadMetaDataFromURL:url forRegion:regionCode countryCallingCode:countryCallingCode];
+}
+
+- (void)loadMetaDataFromURL:(NSURL *)fileURL forRegion:(NSString *)regionCode countryCallingCode:(NSUInteger)countryCallingCode
+{
+    
+}
 
 - (LPNPhoneMetadata *)metadataForRegion:(NSString *)regionCode
 {
     return nil;
 }
 
+- (LPNPhoneMetadata *)metadataForNonGeographicalRegion:(NSUInteger)countryCallingCode
+{
+    return nil;
+}
 
 - (BOOL)isLeadingZeroPossibleForCountryCallingCode:(NSUInteger)countryCallingCode
 {
@@ -89,6 +104,10 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
     return [self examplePhoneNumberOfType:LPNFixedLinePhoneNumberType forRegion:regionCode];
 }
 
+- (LPNPhoneNumber *)examplePhoneNumberForNonGeographicalEntity:(NSUInteger)countryCallingCode
+{
+    return nil;
+}
 
 - (LPNPhoneNumber *)examplePhoneNumberOfType:(LPNPhoneNumberType)numberType forRegion:(NSString *)regionCode
 {
@@ -215,6 +234,11 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
     return nil;
 }
 
+- (NSArray *)regionCodesForCountryCode:(uint32_t)countryCode
+{
+    return nil;
+}
+
 - (uint32_t)countryCodeForRegion:(NSString *)regionCode
 {
     return 0;
@@ -232,7 +256,7 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 
 - (BOOL)isPossiblePhoneNumberString:(NSString *)phoneNumberString dialedFromRegion:(NSString *)regionCode
 {
-    return [self isPossiblePhoneNumber:[self phoneNumberByParsingString:phoneNumberString defaultRegion:regionCode keepingRawInput:NO error:nil]];
+    return [self isPossiblePhoneNumber:[self phoneNumberByParsingString:phoneNumberString defaultRegion:regionCode keepingRawInput:NO error:NULL]];
 }
 
 - (BOOL)isPossiblePhoneNumber:(LPNPhoneNumber *)phoneNumber
@@ -260,9 +284,9 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
     return nil;
 }
 
-- (NSString *)maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:(NSMutableString *)phoneNumberString withMetadata:(LPNPhoneMetadata *)metadata
+- (BOOL)maybeStripNationalPrefixAndCarrierCodeFromPhoneNumberString:(NSMutableString *)phoneNumberString withMetadata:(LPNPhoneMetadata *)metadata strippedContents:(NSString *__autoreleasing*)outStrippedContents
 {
-    return nil;
+    return NO;
 }
 
 - (LPNCountryCodeSource)maybeStripInternationalPrefixAndNormalizePhoneNumberString:(NSMutableString *)phoneNumberString withPossibleIDDPrefix:(NSString *)possibleIddPrefix
@@ -336,7 +360,7 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
             phoneNumber1 = [[LPNPhoneNumber alloc] init];
             phoneNumber2 = [[LPNPhoneNumber alloc] init];
 
-            if ([self parseString:phoneNumberString1 defaultRegion:nil keeepingRawInput:NO checkingRegion:NO intoPhoneNumber:phoneNumber1 error:nil] && [self parseString:phoneNumberString2 defaultRegion:nil keeepingRawInput:NO checkingRegion:NO intoPhoneNumber:phoneNumber2 error:nil]) {
+            if ([self parseString:phoneNumberString1 defaultRegion:nil keeepingRawInput:NO checkingRegion:NO intoPhoneNumber:phoneNumber1 error:NULL] && [self parseString:phoneNumberString2 defaultRegion:nil keeepingRawInput:NO checkingRegion:NO intoPhoneNumber:phoneNumber2 error:NULL]) {
                 
                 return [self matchPhoneNumber:phoneNumber1 againstPhoneNumber:phoneNumber2];
             }
@@ -352,6 +376,11 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 }
 
 - (BOOL)isAlphaPhoneNumberString:(NSString *)phoneNumberString
+{
+    return NO;
+}
+
+- (BOOL)phoneNumberIsGeographical:(LPNPhoneNumber *)phoneNumber
 {
     return NO;
 }
