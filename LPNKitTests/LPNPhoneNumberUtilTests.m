@@ -259,7 +259,7 @@ static LPNPhoneNumber *unknownCountryCodeNoRawInput = nil;
     STAssertEquals(2, [metadata.numberFormats count], @"Must have the correct number of number formats.");
     
     
-    LPNNumberFormat *testNumberFormat = [metadata.numberFormats objectAtIndex:1];
+    LPNNumberFormat *testNumberFormat = (metadata.numberFormats)[1];
     
     STAssertEqualObjects(@"(\\d{3})(\\d{3})(\\d{4})", testNumberFormat.pattern, @"Must have the correct number format pattern.");
     
@@ -294,11 +294,11 @@ static LPNPhoneNumber *unknownCountryCodeNoRawInput = nil;
     STAssertEquals(6, [metadata.numberFormats count], @"Must have the correct number of number formats.");
     
     
-    LPNNumberFormat *testNumberFormat = [metadata.numberFormats objectAtIndex:5];
+    LPNNumberFormat *testNumberFormat = (metadata.numberFormats)[5];
     
     STAssertEquals(1, [testNumberFormat.leadingDigitsPatterns count], @"Must have the correct number of leading digits patterns.");
     
-    STAssertEqualObjects(@"900", [testNumberFormat.leadingDigitsPatterns objectAtIndex:0], @"Must have the correct leading digits pattern.");
+    STAssertEqualObjects(@"900", (testNumberFormat.leadingDigitsPatterns)[0], @"Must have the correct leading digits pattern.");
     
     STAssertEqualObjects(@"(\\d{3})(\\d{3,4})(\\d{4})", testNumberFormat.pattern, @"Must have the correct number format pattern.");
     
@@ -335,15 +335,15 @@ static LPNPhoneNumber *unknownCountryCodeNoRawInput = nil;
     STAssertEqualObjects(@"9$1", metadata.nationalPrefixTransformRule, @"Must have the correct national prefix transform rule.");
     
     
-    LPNNumberFormat *testNumberFormat = [metadata.numberFormats objectAtIndex:2];
+    LPNNumberFormat *testNumberFormat = (metadata.numberFormats)[2];
     
     STAssertEqualObjects(@"$2 15 $3-$4", testNumberFormat.format, @"Must have the correct number format…erm…format.");
     
-    testNumberFormat = [metadata.numberFormats objectAtIndex:3];
+    testNumberFormat = (metadata.numberFormats)[3];
     
     STAssertEqualObjects(@"(9)(\\d{4})(\\d{2})(\\d{4})", testNumberFormat.pattern, @"Must have the correct number format pattern.");
     
-    testNumberFormat = [metadata.internationalNumberFormats objectAtIndex:3];
+    testNumberFormat = (metadata.internationalNumberFormats)[3];
     
     STAssertEqualObjects(@"(9)(\\d{4})(\\d{2})(\\d{4})", testNumberFormat.pattern, @"Must have the correct number format pattern.");
     

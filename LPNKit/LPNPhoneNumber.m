@@ -266,7 +266,7 @@
     result = (53 * result) + [self.extension hash];
     result = (53 * result) + (self.italianLeadingZero ? 1231 : 1237);
     result = (53 * result) + [self.rawInput hash];
-    result = (53 * result) + [[NSNumber numberWithUnsignedInteger:self.countryCodeSource] hash];
+    result = (53 * result) + [@(self.countryCodeSource) hash];
     result = (53 * result) + [self.preferredDomesticCarrierCode hash];
     result = (53 * result) + (self.preferredDomesticCarrierCode != nil ? 1231 : 1237);
     
