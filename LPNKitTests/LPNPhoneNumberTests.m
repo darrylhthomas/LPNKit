@@ -37,8 +37,6 @@
     STAssertEqualObjects(phoneNumberA, phoneNumberB, @"Identical phone numbers should be equal.");
     STAssertEquals([phoneNumberA hash], [phoneNumberB hash], @"Identical phone numbers should have the same hash.");
     
-    [phoneNumberA release];
-    [phoneNumberB release];
 }
 
 
@@ -56,8 +54,6 @@
     STAssertEqualObjects(phoneNumberA, phoneNumberB, @"Identical phone numbers with hasItalianLeadingZero set to default should be equal.");
     STAssertEquals([phoneNumberA hash], [phoneNumberB hash], @"Identical phone numbers with hasItalianLeadingZero set to default should have the same hash.");
     
-    [phoneNumberA release];
-    [phoneNumberB release];
 }
 
 
@@ -74,8 +70,6 @@
     STAssertEqualObjects(phoneNumberA, phoneNumberB, @"Identical phone numbers should be equal.");
     STAssertEquals([phoneNumberA hash], [phoneNumberB hash], @"Identical phone numbers should have the same hash.");
     
-    [phoneNumberA release];
-    [phoneNumberB release];
 }
 
 
@@ -93,8 +87,6 @@
     STAssertFalse([phoneNumberA isEqual:phoneNumberB], @"Otherwise identical phone numbers with hasItalianLeadingZero set to YES should not be equal.");
     STAssertFalse([phoneNumberA hash] == [phoneNumberB hash], @"Otherwise identical phone numbers with hasItalianLeadingZero set to YES should not have the same hash.");
     
-    [phoneNumberA release];
-    [phoneNumberB release];
 }
 
 
@@ -115,8 +107,6 @@
     STAssertFalse([phoneNumberA isEqual:phoneNumberB], @"Phone numbers should not be equal when raw input differs.");
     STAssertFalse([phoneNumberA hash] == [phoneNumberB hash], @"Hashes should not be equal when raw input differs.");
     
-    [phoneNumberA release];
-    [phoneNumberB release];
 }
 
 
@@ -134,8 +124,6 @@
     STAssertFalse([phoneNumberA isEqual:phoneNumberB], @"Phone numbers should not be equal when preferred domestic carrier code is set to default.");
     STAssertFalse([phoneNumberA hash] == [phoneNumberB hash], @"Hashes should not be equal when preferred domestic carrier code is set to default.");
     
-    [phoneNumberA release];
-    [phoneNumberB release];
 }
 
 
@@ -154,8 +142,6 @@
     STAssertTrue([phoneNumberA isEqual:phoneNumberB], @"Phone numbers should be equal when preferred domestic carrier code is set to default on both.");
     STAssertTrue([phoneNumberA hash] == [phoneNumberB hash], @"Hashes should be equal when preferred domestic carrier code is set to default on both.");
     
-    [phoneNumberA release];
-    [phoneNumberB release];
 }
 
 

@@ -20,6 +20,7 @@
 //
 
 #import "LPNPhoneNumberMatch.h"
+#import "LPNPhoneNumber.h"
 
 @implementation LPNPhoneNumberMatch
 
@@ -37,20 +38,13 @@
     if (self) {        
         _start = start;
         _rawString = [rawString copy];
-        _phoneNumber = [phoneNumber retain];
+        _phoneNumber = phoneNumber;
     }
     
     return self;
 }
 
 
-- (void)dealloc
-{
-    [_rawString release];
-    [_phoneNumber release];
-    
-    [super dealloc];
-}
 
 
 - (NSUInteger)end

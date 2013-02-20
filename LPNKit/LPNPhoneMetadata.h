@@ -31,12 +31,12 @@
 @property (nonatomic, copy, readonly) NSString *nationalPrefix;
 @property (nonatomic, copy) NSString *nationalPrefixForParsing;
 @property (nonatomic, copy) NSString *nationalPrefixTransformRule;
-@property (nonatomic, retain, readonly) NSArray *numberFormats;
+@property (nonatomic, strong, readonly) NSArray *numberFormats;
 @property (nonatomic, copy, readonly) NSArray *internationalNumberFormats;
-@property (nonatomic, retain) LPNPhoneNumberDescription *generalDescription;
-@property (nonatomic, retain, readonly) LPNPhoneNumberDescription *fixedLineDescription;
-@property (nonatomic, retain, readonly) LPNPhoneNumberDescription *tollFreeDescription;
-@property (nonatomic, retain, readonly) LPNPhoneNumberDescription *premiumRateDescription;
-@property (nonatomic, retain, readonly) LPNPhoneNumberDescription *sharedCostDescription;
+@property (nonatomic, strong) LPNPhoneNumberDescription *generalDescription;
+@property (nonatomic, strong, readonly) LPNPhoneNumberDescription *fixedLineDescription;
+@property (nonatomic, strong, readonly) LPNPhoneNumberDescription *tollFreeDescription;
+@property (nonatomic, strong, readonly) LPNPhoneNumberDescription *premiumRateDescription;
+@property (nonatomic, strong, readonly) LPNPhoneNumberDescription *sharedCostDescription;
 
 @end

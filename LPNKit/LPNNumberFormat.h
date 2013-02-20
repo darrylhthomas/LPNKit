@@ -25,7 +25,7 @@
 
 @property (nonatomic, copy) NSString *pattern;
 @property (nonatomic, copy) NSString *format;
-@property (nonatomic, readonly, readonly) NSArray *leadingDigitsPatterns;
+@property (nonatomic, strong, readonly) NSArray *leadingDigitsPatterns;
 @property (nonatomic, copy) NSString *nationalPrefixFormattingRule;
 
 @end

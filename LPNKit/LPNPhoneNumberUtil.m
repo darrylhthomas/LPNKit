@@ -51,7 +51,7 @@ static LPNPhoneNumberUtil *sharedPhoneNumberUtil = nil;
 
 + (void)resetSharedPhoneNumberUtil
 {
-    [sharedPhoneNumberUtil release], sharedPhoneNumberUtil = nil;
+    sharedPhoneNumberUtil = nil;
 }
 
 - (void)loadMetadataFromFile:(NSString *)filePath forRegion:(NSString *)regionCode countryCallingCode:(NSUInteger)countryCallingCode

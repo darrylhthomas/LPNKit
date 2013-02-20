@@ -39,9 +39,6 @@
     STAssertEqualObjects(match1.rawString, match2.rawString, @"Identical matches should have the same raw string.");
     STAssertEqualObjects(@"1 800 234 45 67", match1.rawString, @"Raw string should be unchanged.");
     
-    [match1 release];
-    [match2 release];
-    [phoneNumber release];
 }
 
 
